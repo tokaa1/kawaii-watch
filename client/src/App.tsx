@@ -12,7 +12,7 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "girl",
-      content: "hey!",
+      content: "hey! asdasdasdasdasdasdasdsadasdsadsadsadsadsadsadsadasdasd",
       sender: "Jasmine"
     },
     {
@@ -22,13 +22,29 @@ function App() {
     },
   ])
 
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Auto scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+  }, [messages])
+
   const bubbles = [];
   for (let i = messages.length - 1; i >= 0; i--) {
     bubbles.push(<Bubble key={i} message={messages[i]} left={messages[i].role === "girl"} />)
   }
 
-  return <div className="w-screen h-screen bg-black flex justify-center">
-    <div className="w-[40%] max-h-full p-2 flex flex-col gap-2 justify-end overflow-y-auto">
+  return <div className="w-screen h-screen bg-black flex justify-center items-end">
+    <div 
+      ref={containerRef}
+      className="w-[40%] h-full px-0 py-10 flex flex-col gap-2 overflow-y-auto scrollbar-hide"
+      style={{
+        scrollbarWidth: "none", // Firefox
+        msOverflowStyle: "none", // IE 10+
+      }}
+    >
       {bubbles}
     </div>
     <button 
@@ -48,21 +64,20 @@ function App() {
 
 function Bubble({ message, left }: { message: Message, left: boolean }) {
   const [visible, setVisible] = useState(false)
-  const bubbleRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Trigger animation after mount
     setVisible(true)
   }, [])
 
   return (
     <div className={`w-full flex ${left ? "justify-start" : "justify-end"}`}>
       <div
-        ref={bubbleRef}
         className={`
+          max-w-[70%]
           w-fit bg-white/12 px-4 py-2 rounded-xl text-white font-light text-2xl
           transition-all duration-500 ease-out
-          ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
+          break-words whitespace-pre-line
+          ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
         `}
         style={{ willChange: "opacity, transform" }}
       >
