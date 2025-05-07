@@ -19,11 +19,11 @@ export async function putOn(
   girl: Lover,
   boy: Lover,
   startMessage: string,
+  temperature: number = 0.4,
   onMessage: (message: string, senderName: string) => void
 ) {
   const messages: LoverMessage[] = [];
   const messageLimit = 300;
-  const temperature = 0.4;
 
   onMessage(startMessage, boy.name);
 
@@ -50,7 +50,7 @@ export async function putOn(
     });
     flipMessageRoles(messages);
     const aWordCount = getWordCount(responseA);
-    await sleep(Math.max(0, Date.now() - responseStart + random(aWordCount * 25, aWordCount * 50)));
+    await sleep(Math.max(0, Date.now() - responseStart + random(aWordCount * 15, aWordCount * 25)));
     onMessage(responseA, girl.name);
     responseStart = Date.now();
     
@@ -68,7 +68,7 @@ export async function putOn(
       role: "user",
     });
     const bWordCount = getWordCount(responseB);
-    await sleep(Math.max(0, Date.now() - responseStart + random(bWordCount * 25, bWordCount * 50)));
+    await sleep(Math.max(0, Date.now() - responseStart + random(bWordCount * 15, bWordCount * 25)));
     onMessage(responseB, boy.name);
   }
 }

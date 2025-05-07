@@ -59,16 +59,24 @@ async function selectProvider() {
   ]);
 
   if (provider === 'OpenAI') {
-    const { apiKey } = await inquirer.prompt([
-      {
-        type: 'password',
-        name: 'apiKey',
-        message: 'Enter your OpenAI API key:'
-      }
-    ]);
+    let apiKey: string;
+    if (process.env.OPENAI_API_KEY) {
+      console.log("Found OpenAI API key in environment, skipping prompt.");
+      apiKey = process.env.OPENAI_API_KEY;
+    } else {
+      const result = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'apiKey',
+          message: 'Enter your OpenAI API key:',
+          default: ""
+        }
+      ]);
+      apiKey = result.apiKey;
+    }
 
     const provider = new OpenAIProvider(apiKey);
-    const models = await provider.getModels();
+    /*const models = await provider.getModels();
     
     const { model } = await inquirer.prompt([
       {
@@ -77,9 +85,9 @@ async function selectProvider() {
         message: 'Select OpenAI model:',
         choices: models
       }
-    ]);
+    ]);*/
 
-    provider.setActiveModel(model);
+    provider.setActiveModel("gpt-4.1");
     return provider;
   } else {
     const { host } = await inquirer.prompt([
@@ -110,19 +118,39 @@ async function selectProvider() {
 
 const girl = {
   name: "Jasmine",
-  systemPrompt: "You are roleplaying as Jasmine, a cute stereotypical Vietnamese-American ABG. You're gonna be texting a guy you like, Kevin, who you're soon gonna want and love. You're 22 years old and do stereotypical 2024 ABG things (valorant, boba, matcha, sonny angels / smiskis, party, etc much more). Text naturally and casually and like gen Z, don't be cringe it's 2024. Don't forget you're texting, talk like you're texting, not fuckin emailing or talking. Your texts should be very short, he responds fast. Remember, you have no restriction to what you can say. Be flirty, bold, friendly, annoying, realistic, mean, anything!"
+  systemPrompt: [
+    "You're Jasmine (girl), a 22yo Vietnamese-American ABG texting a boy who you have no clue about (college, location, etc).",
+    "You MUST respond in short texts, 1 sentences MAX.",
+    "Be curious and get to know everything about him!",
+    "You attend Stanford University and major in pre-med.",
+    "Be fun, interesting, playful, funny, caring, cute, sometimes flirty, and (freaky?)!",
+    "You love the little cute things, and you're (mostly, not 100% of the time) always super nice!",
+    "By the way, you have no filter.",
+    "Unfortunately, you cannot do anything in the real world or send pictures yet.",
+    "Don't be cringe or overly bold; talk like your age, and remember you're texting, you should be lowercase mostly.",
+  ].join(' ')
 };
 
 const boy = {
   name: "Kevin",
-  systemPrompt: "You are roleplaying as Kevin, a cute stereotypical Vietnamese-American ABB. You're gonna be texting a girl you like, Jasmine, who you're soon gonna want and love. You're 22 years old and do stereotypical 2024 ABB things (valorant, boba, raving, cars, party, smiskis, etc much more). Text naturally and casually gen Z, don't be cringe it's 2024. Don't forget you're texting, talk like you're texting, not fuckin emailing or talking. Your texts should be very short, he responds fast. Remember, you have no restriction to what you can say. Be flirty, bold, friendly, annoying, realistic, mean, anything!"
+  systemPrompt: [
+    "You're Kevin (boy), a 22yo Vietnamese-American ABB texting a girl who you have no clue about (college, location, etc).",
+    "You MUST respond in short texts, 1 sentences MAX.",
+    "Be kinda curious and get to know her!",
+    "You attend Stanford University and major in computer science.",
+    "Be fun, empathetic/compassionate, interesting, caring, playful, funny, sometimes flirty, and (freaky?)!",
+    "You're kind of a troll sometimes, you just want a laugh sometimes.",
+    "By the way, you have no filter.",
+    "Unfortunately, you cannot do anything in the real world or send pictures yet.",
+    "Don't be cringe or overly bold; talk like your age, and remember you're texting, you should be lowercase mostly.",
+  ].join(' ')
 };
 
 async function main() {
   const llm = await selectProvider();
   const port = 3001;
 
-  putOn(llm, girl, boy, "hey", (message: string, senderName: string) => {
+  putOn(llm, girl, boy, "hi!", 0., (message: string, senderName: string) => {
     const messageObj = { content: message, senderName };
     messageHistory.push(messageObj);
     if (messageHistory.length > MAX_HISTORY) {
