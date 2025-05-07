@@ -1,0 +1,15 @@
+{
+  "name": "kawaii-watch",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts"
+  },
+  "dependencies": {
+    "@types/inquirer": "^9.0.8",
+    "hono": "^4.7.8",
+    "inquirer": "^12.6.0",
+    "ollama": "^0.5.15"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
