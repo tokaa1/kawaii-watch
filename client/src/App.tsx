@@ -28,7 +28,7 @@ function App() {
   }
 
   return <div className="w-screen h-screen bg-black flex justify-center">
-    <div className="w-[40%] h-full p-2 flex flex-col gap-2 justify-end">
+    <div className="w-[40%] max-h-full p-2 flex flex-col gap-2 justify-end overflow-y-auto">
       {bubbles}
     </div>
     <button 
