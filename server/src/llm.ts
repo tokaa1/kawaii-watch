@@ -7,7 +7,7 @@ export type Message = {
 }
 
 export interface LLMProvider {
-  chat(messages: Message[], options?: { temperature?: number }): Promise<{ message: { content: string } }>;
+  chat(messages: Message[], options?: { temperature?: number }): Promise<string>;
   getModels(): Promise<string[]>;
   setActiveModel(model: string): void;
 }
@@ -33,13 +33,14 @@ export class OllamaProvider implements LLMProvider {
     if (!this.activeModel) {
       throw new Error("No active model");
     }
-    return this.client.chat({
+    const response = await this.client.chat({
       model: this.activeModel,
       messages,
       options: {
         temperature: options?.temperature ?? 1.0
       }
     });
+    return response.message.content || "";
   }
 }
 
@@ -70,10 +71,6 @@ export class OpenAIProvider implements LLMProvider {
       temperature: options?.temperature ?? 1.0
     });
 
-    return {
-      message: {
-        content: response.choices[0].message.content || ""
-      }
-    };
+    return response.choices[0].message.content || "";
   }
 } 
