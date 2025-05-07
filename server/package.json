@@ -5,9 +5,12 @@
   },
   "dependencies": {
     "@types/inquirer": "^9.0.8",
+    "@types/ws": "^8.18.1",
     "hono": "^4.7.8",
     "inquirer": "^12.6.0",
-    "ollama": "^0.5.15"
+    "ollama": "^0.5.15",
+    "openai": "^4.97.0",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@types/bun": "latest"

@@ -1,4 +1,4 @@
-import { Message, Ollama } from "ollama";
+import { Message, LLMProvider } from "./llm";
 
 export type Lover = {
   systemPrompt: string;
@@ -12,8 +12,7 @@ export type LoverMessage = {
 }
 
 export async function putOn(
-  ollama: Ollama,
-  model: string,
+  llm: LLMProvider,
   girl: Lover,
   boy: Lover,
   startMessage: string,
@@ -21,26 +20,21 @@ export async function putOn(
 ) {
   const messages: LoverMessage[] = [];
   const messageLimit = 300;
-  const temperature = 1.5;
+  const temperature = 0.25;
 
   while (messages.length < messageLimit) {
-    const responseA = await ollama.chat({
-      model,
-      messages: [
-        {
-          role: "system",
-          content: girl.systemPrompt,
-        },
-        {
-          content: startMessage,
-          role: "user",
-        },
-        ...messages as Message[],
-      ],
-      options: {
-        temperature,
-      }
-    });
+    const responseA = await llm.chat([
+      {
+        role: "system",
+        content: girl.systemPrompt,
+      },
+      {
+        content: startMessage,
+        role: "user",
+      },
+      ...messages as Message[],
+    ], { temperature });
+    
     messages.push({
       content: responseA.message.content,
       senderName: girl.name,
@@ -48,19 +42,15 @@ export async function putOn(
     });
     flipMessageRoles(messages);
     onMessage(responseA.message.content, girl.name);
-    const responseB = await ollama.chat({
-      model,
-      messages: [
-        {
-          role: "system",
-          content: boy.systemPrompt,
-        },
-        ...messages as Message[],
-      ],
-      options: {
-        temperature,
-      }
-    });
+    
+    const responseB = await llm.chat([
+      {
+        role: "system",
+        content: boy.systemPrompt,
+      },
+      ...messages as Message[],
+    ], { temperature });
+    
     messages.push({
       content: responseB.message.content,
       senderName: boy.name,

@@ -8,21 +8,62 @@ type Message = {
   sender: string
 }
 
-function App() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "girl",
-      content: "hey! asdasdasdasdasdasdasdsadasdsadsadsadsadsadsadsadasdasd",
-      sender: "Jasmine"
-    },
-    {
-      role: "boy",
-      content: "yoooo",
-      sender: "Kevin"
-    },
-  ])
+type WSMessage = {
+  type: 'init' | 'message'
+  content?: string
+  senderName?: string
+  girl?: string
+  boy?: string
+  history?: { content: string; senderName: string }[]
+}
 
+function App() {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [connected, setConnected] = useState(false)
+  const [girlName, setGirlName] = useState<string>("")
+  const [boyName, setBoyName] = useState<string>("")
+  const wsRef = useRef<WebSocket | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3001')
+    wsRef.current = ws
+
+    ws.onopen = () => {
+      setConnected(true)
+    }
+
+    ws.onmessage = (event) => {
+      const data: WSMessage = JSON.parse(event.data)
+      
+      if (data.type === 'init' && data.history && data.girl && data.boy) {
+        setGirlName(data.girl)
+        setBoyName(data.boy)
+        // Convert history messages to our format
+        const historyMessages: Message[] = data.history.map(msg => ({
+          role: msg.senderName === data.girl ? "girl" : "boy",
+          content: msg.content,
+          sender: msg.senderName
+        }))
+        setMessages(historyMessages)
+      } else if (data.type === 'message' && data.content && data.senderName) {
+        const newMessage: Message = {
+          role: data.senderName === girlName ? "girl" : "boy",
+          content: data.content,
+          sender: data.senderName
+        }
+        setMessages(prev => [...prev, newMessage])
+      }
+    }
+
+    ws.onclose = () => {
+      setConnected(false)
+    }
+
+    return () => {
+      ws.close()
+    }
+  }, [girlName])
 
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
@@ -47,18 +88,11 @@ function App() {
     >
       {bubbles}
     </div>
-    <button 
-      className="absolute bottom-3 px-4 py-2 bg-black hover:bg-white/10 transition-all duration-300 border-white/30 border-[1px] outline-none rounded-xl text-white font-light text-xs cursor-pointer"
-      onClick={() => {
-        setMessages([...messages, {
-          role: "boy",
-          content: "yoooo",
-          sender: "Kevin"
-        }])
-      }}
-    >
-      Add message
-    </button>
+    {!connected && (
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-500/20 text-red-500 rounded-xl text-sm">
+        Disconnected from server
+      </div>
+    )}
   </div>
 }
 
