@@ -65,7 +65,6 @@ function App() {
     }
   }, [girlName])
 
-  // Auto scroll to bottom when new messages arrive
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
