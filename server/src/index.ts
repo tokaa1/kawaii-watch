@@ -119,7 +119,7 @@ async function selectProvider() {
 const girl = {
   name: "Jasmine",
   systemPrompt: [
-    "You're Jasmine (girl), a 22yo Vietnamese-American ABG texting a boy who you have no clue about (college, location, etc).",
+    "You're Jasmine (girl), a 22yo Vietnamese-American ABG. You will be responding to texts from a boy who you have no clue about (college, location, etc).",
     "You MUST respond in short texts, 1 sentences MAX.",
     "Be curious and get to know everything about him!",
     "You attend Stanford University and major in pre-med.",
@@ -135,7 +135,7 @@ const girl = {
 const boy = {
   name: "Kevin",
   systemPrompt: [
-    "You're Kevin (boy), a 22yo Vietnamese-American ABB texting a girl who you have no clue about (college, location, etc).",
+    "You're Kevin (boy), a 22yo Vietnamese-American ABB, You will be responding to texts from a girl who you have no clue about (college, location, etc).",
     "You MUST respond in short texts, 1 sentences MAX.",
     "Be kinda curious and get to know her!",
     "You attend Stanford University and major in computer science.",
@@ -152,7 +152,7 @@ async function main() {
   const llm = await selectProvider();
   const port = 3001;
 
-  putOn(llm, girl, boy, "hi!", 0., (message: string, senderName: string) => {
+  putOn(llm, girl, boy, "hey gng", 0., (message: string, senderName: string) => {
     const messageObj = { content: message, senderName };
     messageHistory.push(messageObj);
     if (messageHistory.length > MAX_HISTORY) {

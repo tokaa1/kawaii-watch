@@ -93,6 +93,9 @@ function App() {
         Disconnected from server
       </div>
     )}
+    {connected && (
+      <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-blue-500 animate-pulse"/>
+    )}
   </div>
 }
 
