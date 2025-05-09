@@ -151,7 +151,7 @@ async function main() {
   const llm = await selectProvider();
   const port = 3001;
 
-  putOn(llm, girl, boy, "hey gng", 0.3, (message: string, senderName: string) => {
+  putOn(llm, girl, boy, "hey gng", 0.6, (message: string, senderName: string) => {
     const messageObj = { content: message, senderName };
     messageHistory.push(messageObj);
     if (messageHistory.length > MAX_HISTORY) {
