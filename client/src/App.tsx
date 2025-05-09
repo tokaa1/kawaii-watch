@@ -79,21 +79,21 @@ function App() {
   return <div className="w-screen h-screen bg-black flex justify-center items-end">
     <div 
       ref={containerRef}
-      className="w-[40%] h-full px-0 py-10 flex flex-col gap-2 overflow-y-auto scrollbar-hide"
+      className="w-[50%] h-full px-[5%] py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
       style={{
-        scrollbarWidth: "none", // Firefox
-        msOverflowStyle: "none", // IE 10+
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
       }}
     >
       {bubbles}
     </div>
     {!connected && (
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-500/20 text-red-500 rounded-xl text-sm">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-300/30 text-red-500 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
         Disconnected from server
       </div>
     )}
     {connected && (
-      <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-blue-500 animate-pulse"/>
+      <div className="absolute top-5 right-5 w-3 h-3 rounded-full bg-pink-400 animate-pulse shadow-lg"/>
     )}
   </div>
 }
@@ -110,12 +110,17 @@ function Bubble({ message, left }: { message: Message, left: boolean }) {
       <div
         className={`
           max-w-[70%]
-          w-fit bg-white/12 px-4 py-2 rounded-xl text-white font-light text-2xl
+          w-fit px-4 py-2 rounded-2xl font-medium text-lg
           transition-all duration-500 ease-out
           break-words whitespace-pre-line
           ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+          ${left ? "bg-white/10 text-pink-100 shadow-lg" : "bg-white/10 text-indigo-100 shadow-lg"}
+          hover:scale-105 transform transition-transform
         `}
-        style={{ willChange: "opacity, transform" }}
+        style={{ 
+          willChange: "opacity, transform",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.1)"
+        }}
       >
         {message.content}
       </div>
