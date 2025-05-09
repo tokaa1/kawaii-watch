@@ -1,0 +1,20 @@
+{
+  "name": "kawaii-watch",
+  "version": "1.0.0",
+  "description": "Making AI's fall in love so we can watch.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cd ./client; bun run dev & cd ../server; bun run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tokaa1/kawaii-watch.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tokaa1/kawaii-watch/issues"
+  },
+  "homepage": "https://github.com/tokaa1/kawaii-watch#readme"
+}

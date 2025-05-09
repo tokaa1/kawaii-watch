@@ -1,5 +1,5 @@
 {
-  "name": "kawaii-watch",
+  "name": "kawaii-watch-server",
   "scripts": {
     "dev": "bun run --hot src/index.ts"
   },
