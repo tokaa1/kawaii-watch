@@ -20,8 +20,8 @@ type WSMessage = {
 function App() {
   const [messages, setMessages] = useState<Message[]>([])
   const [connected, setConnected] = useState(false)
-  const [girlName, setGirlName] = useState<string>("")
-  const [boyName, setBoyName] = useState<string>("")
+  const [girlName, setGirlName] = useState<string>("Undetermined")
+  const [boyName, setBoyName] = useState<string>("Undetermined")
   const wsRef = useRef<WebSocket | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -71,33 +71,58 @@ function App() {
     }
   }, [messages])
 
+  // Fade-in state for the top-level div
+  const [fadeIn, setFadeIn] = useState(false);
+  useEffect(() => {
+    setFadeIn(true);
+  }, []);
+
   const bubbles = [];
   for (let i = messages.length - 1; i >= 0; i--) {
     bubbles.push(<Bubble key={i} message={messages[i]} left={messages[i].role === "girl"} />)
   }
 
-  return <div className="w-screen h-screen bg-black flex justify-center items-end">
-    <IntroPopUp></IntroPopUp>
-    <ActionBar boyName={boyName} girlName={girlName}></ActionBar>
-    <div 
-      ref={containerRef}
-      className="w-[100%] h-full px-[30%] py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
-      style={{
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-      }}
+  return (
+    <div
+      className={`w-screen h-screen bg-black flex justify-center items-end transition-opacity duration-700 ${fadeIn ? "opacity-100" : "opacity-0"}`}
+      style={{ opacity: fadeIn ? 1 : 0 }}
     >
-      {bubbles}
-    </div>
-    {!connected && (
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-300/30 text-red-500 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
-        Disconnected from server
+      <IntroPopUp></IntroPopUp>
+      <StatsBar boyName={boyName} girlName={girlName} messagesRecieved={messages.length}></StatsBar>
+      <ActionCluster></ActionCluster>
+      <div 
+        ref={containerRef}
+        className="w-[100%] h-full px-[30%] py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
+        style={{
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
+        {bubbles}
       </div>
-    )}
-    {connected && (
-      <div className="absolute top-5 right-5 w-3 h-3 rounded-full bg-pink-400 animate-pulse shadow-lg"/>
-    )}
-  </div>
+      {!connected && <>
+        <div className="absolute flex flex-col top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-300/30 text-red-500 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
+          Disconnected from server
+          <button 
+            className="bg-red-400 border-1 border-solid border-white/30 rounded-full animate-pulse text-white cursor-pointer hover:bg-red-400/50 transition-all"
+            onClick={() => location.reload()}
+          >
+            Click here to refresh!
+          </button>
+        </div>
+        {bubbles.length == 0 &&<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-sans text-lg text-white text-center">
+          it seems we can't connect to the <span className="text-pink-500 font-bold">kawaii-watch</span> server...
+          <br></br>
+          maybe it's reloading or down!
+          <br></br>
+          you can always host it yourself, it's <a className="text-blue-300 underline italic bg-blue-400/30 p-1" href="https://github.com/tokaa1/kawaii-watch">here on github</a>
+        </div>}
+      </>}
+      {connected && (
+        <div className="absolute top-5 right-5 w-3 h-3 rounded-full bg-pink-400 animate-pulse shadow-lg"/>
+      )}
+    </div>
+  )
 }
 
 function Bubble({ message, left }: { message: Message, left: boolean }) {
@@ -133,13 +158,14 @@ function Bubble({ message, left }: { message: Message, left: boolean }) {
 
 function IntroPopUp() {
   const hexBgOpacity = '33';
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for dismissal state
     const wasDismissed = localStorage.getItem("introPopUpDismissed");
     if (wasDismissed === "true") {
       setDismissed(true);
+    } else {
+      setDismissed(false);
     }
   }, []);
 
@@ -184,10 +210,16 @@ function IntroPopUp() {
   )
 }
 
-function ActionBar({boyName, girlName}: {boyName: string, girlName: string}) {
-  return <div className="px-26 py-4 flex flex-col justify-center absolute bottom-4 bg-zinc-900/80 border-1 border-pink-400/60 border-solid rounded-full z-[100001]">
-    <span className="text-white font-sans text-center text-md">Currently texting: <span className="text-indigo-400 font-bold">{boyName}</span> and <span className="text-pink-300 font-bold">{girlName}</span></span>
-    <span className="text-white font-sans text-center text-xs">Messages exchanged: <span className="text-[rgb(23,255,120)] font-bold">25</span></span>
+function StatsBar({boyName, girlName, messagesRecieved}: {boyName: string, girlName: string, messagesRecieved: number}) {
+  return <div className="px-10 py-4 flex flex-col justify-center absolute bottom-4 bg-zinc-900/80 border-1 border-pink-400/60 border-solid rounded-full z-[100001]">
+    <span className="text-white font-sans text-center text-md">Currently texting: <span className="text-pink-300 font-bold">{girlName}</span> and <span className="text-indigo-400 font-bold">{boyName}</span></span>
+    <span className="text-white font-sans text-center text-xs">Messages exchanged: <span className="text-[rgb(23,255,120)] font-bold">{messagesRecieved}</span></span>
+  </div>
+}
+
+function ActionCluster() {
+  return <div>
+
   </div>
 }
 
