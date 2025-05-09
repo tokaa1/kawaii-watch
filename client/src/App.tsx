@@ -77,9 +77,11 @@ function App() {
   }
 
   return <div className="w-screen h-screen bg-black flex justify-center items-end">
+    <IntroPopUp></IntroPopUp>
+    <ActionBar boyName={boyName} girlName={girlName}></ActionBar>
     <div 
       ref={containerRef}
-      className="w-[50%] h-full px-[5%] py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
+      className="w-[100%] h-full px-[30%] py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
       style={{
         scrollbarWidth: "none",
         msOverflowStyle: "none",
@@ -114,7 +116,7 @@ function Bubble({ message, left }: { message: Message, left: boolean }) {
           transition-all duration-500 ease-out
           break-words whitespace-pre-line
           ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-          ${left ? "bg-white/10 text-pink-100 shadow-lg" : "bg-white/10 text-indigo-100 shadow-lg"}
+          ${left ? "bg-white/10 text-pink-100 shadow-lg" : "bg-white/10 text-indigo-300 shadow-lg"}
           hover:scale-105 transform transition-transform
         `}
         style={{ 
@@ -126,6 +128,67 @@ function Bubble({ message, left }: { message: Message, left: boolean }) {
       </div>
     </div>
   )
+}
+
+
+function IntroPopUp() {
+  const hexBgOpacity = '33';
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    // Check localStorage for dismissal state
+    const wasDismissed = localStorage.getItem("introPopUpDismissed");
+    if (wasDismissed === "true") {
+      setDismissed(true);
+    }
+  }, []);
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    localStorage.setItem("introPopUpDismissed", "true");
+  };
+
+  if (dismissed) return null;
+
+  return (
+    <div
+      className="w-[60%] h-[60%] flex flex-col gap-4 p-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 backdrop-blur-xs z-[1000] rounded-3xl border-[1px] border-solid border-white/20"
+      style={{
+        background: `linear-gradient(135deg, #ffe0ef${hexBgOpacity} 0%, #b7e5b4${hexBgOpacity} 60%, #c7eaff${hexBgOpacity} 100%)`
+      }}
+    >
+      <button
+        onClick={handleDismiss}
+        className="absolute top-4 right-4 px-3 py-1 bg-white/30 text-pink-500 rounded-full text-sm font-medium hover:bg-white/50 transition"
+        aria-label="Dismiss intro"
+      >
+        ×
+      </button>
+      <img src="logo.png" className="absolute right-8 h-[18%] aspect-square" />
+      <span className="font-sans text-white text-[4vw] font-light leading-tight">
+        this is <span className="font-bold text-pink-500 text-[4vw]">kawaii-watch</span>
+        <span className="ml-2 text-[1vw] text-white font-light italic">
+          watch llms fall in love
+        </span>
+      </span>
+      <span className="font-sans text-white text-[1.5vw] leading-snug">
+        so pretty much, here you get to watch two llm's (<span className="text-pink-200">girl</span> and <span className="text-indigo-200">boy</span>) text each in <span className="font-bold text-red-400">REAL TIME</span>
+      </span>
+      <span className="font-sans text-white text-[1.5vw] leading-snug">
+        it's interesting because you get to experience the genius of LLM's, the stupid, and the room for improvement
+      </span>
+      <span className="font-sans text-white text-[1.3vw] text-yellow-200 leading-snug">
+        they both don't have any context about each other, they learn through communicating!
+      </span>
+    </div>
+  )
+}
+
+function ActionBar({boyName, girlName}: {boyName: string, girlName: string}) {
+  return <div className="px-26 py-4 flex flex-col justify-center absolute bottom-4 bg-zinc-900/80 border-1 border-pink-400/60 border-solid rounded-full z-[100001]">
+    <span className="text-white font-sans text-center text-md">Currently texting: <span className="text-indigo-400 font-bold">{boyName}</span> and <span className="text-pink-300 font-bold">{girlName}</span></span>
+    <span className="text-white font-sans text-center text-xs">Messages exchanged: <span className="text-[rgb(23,255,120)] font-bold">25</span></span>
+  </div>
 }
 
 export default App
