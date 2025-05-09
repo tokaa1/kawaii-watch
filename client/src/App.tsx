@@ -35,7 +35,7 @@ function App() {
 
     ws.onmessage = (event) => {
       const data: WSMessage = JSON.parse(event.data)
-      
+
       if (data.type === 'init' && data.history && data.girl && data.boy) {
         setGirlName(data.girl)
         setBoyName(data.boy)
@@ -90,7 +90,7 @@ function App() {
       <IntroPopUp></IntroPopUp>
       <StatsBar boyName={boyName} girlName={girlName} messagesRecieved={messages.length}></StatsBar>
       <ActionCluster></ActionCluster>
-      <div 
+      <div
         ref={containerRef}
         className="w-[100%] h-full px-[30%] py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
         style={{
@@ -103,14 +103,14 @@ function App() {
       {!connected && <>
         <div className="absolute flex flex-col top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-300/30 text-red-500 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
           Disconnected from server
-          <button 
+          <button
             className="bg-red-400 border-1 border-solid border-white/30 rounded-full animate-pulse text-white cursor-pointer hover:bg-red-400/50 transition-all"
             onClick={() => location.reload()}
           >
             Click here to refresh!
           </button>
         </div>
-        {bubbles.length == 0 &&<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-sans text-lg text-white text-center">
+        {bubbles.length == 0 && <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-sans text-lg text-white text-center">
           it seems we can't connect to the <span className="text-pink-500 font-bold">kawaii-watch</span> server...
           <br></br>
           maybe it's reloading or down!
@@ -119,7 +119,7 @@ function App() {
         </div>}
       </>}
       {connected && (
-        <div className="absolute top-5 right-5 w-3 h-3 rounded-full bg-pink-400 animate-pulse shadow-lg"/>
+        <div className="absolute top-5 right-5 w-3 h-3 rounded-full bg-pink-400 animate-pulse shadow-lg" />
       )}
     </div>
   )
@@ -144,7 +144,7 @@ function Bubble({ message, left }: { message: Message, left: boolean }) {
           ${left ? "bg-white/10 text-pink-100 shadow-lg" : "bg-white/10 text-indigo-300 shadow-lg"}
           hover:scale-105 transform transition-transform
         `}
-        style={{ 
+        style={{
           willChange: "opacity, transform",
           boxShadow: "0 4px 15px rgba(0,0,0,0.1)"
         }}
@@ -185,7 +185,7 @@ function IntroPopUp() {
     >
       <button
         onClick={handleDismiss}
-        className="absolute top-4 right-4 px-3 py-1 bg-white/30 text-pink-500 rounded-full text-sm font-medium hover:bg-white/50 transition"
+        className="absolute top-4 right-4 px-3 py-1 bg-zinc-600/30 text-pink-500 rounded-full text-sm font-medium hover:bg-zinc-600/50 transition cursor-pointer"
         aria-label="Dismiss intro"
       >
         ×
@@ -210,17 +210,26 @@ function IntroPopUp() {
   )
 }
 
-function StatsBar({boyName, girlName, messagesRecieved}: {boyName: string, girlName: string, messagesRecieved: number}) {
+function StatsBar({ boyName, girlName, messagesRecieved }: { boyName: string, girlName: string, messagesRecieved: number }) {
   return <div className="px-10 py-4 flex flex-col justify-center absolute bottom-4 bg-zinc-900/80 border-1 border-pink-400/60 border-solid rounded-full z-[100001]">
     <span className="text-white font-sans text-center text-md">Currently texting: <span className="text-pink-300 font-bold">{girlName}</span> and <span className="text-indigo-400 font-bold">{boyName}</span></span>
-    <span className="text-white font-sans text-center text-xs">Messages exchanged: <span className="text-[rgb(23,255,120)] font-bold">{messagesRecieved}</span></span>
+    <span className="text-white font-sans text-center text-xs">Messages exchanged (loaded): <span className="text-[rgb(23,255,120)] font-bold">{messagesRecieved}</span></span>
   </div>
 }
 
 function ActionCluster() {
-  return <div>
-
+  return <div className="flex-row gap-1 absolute left-2 bottom-2">
+    <ActionButton onClick={() => {localStorage.setItem("introPopUpDismissed", 'false')}}>open introduction (again)</ActionButton>
   </div>
+}
+
+function ActionButton({ children, onClick }: { children: any, onClick: () => void }) {
+  return <button
+    className="px-1 bg-zinc-700 border-1 border-solid border-white/30 rounded-full animate-pulse text-white cursor-pointer hover:bg-zinc-700/50 transition-all"
+    onClick={onClick}
+  >
+    {children}
+  </button>
 }
 
 export default App
