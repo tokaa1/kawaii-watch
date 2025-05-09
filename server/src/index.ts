@@ -6,22 +6,18 @@ import { createServer } from 'http';
 import { OllamaProvider, OpenAIProvider } from './llm';
 import { Ollama } from 'ollama';
 
-// Store recent messages
 const messageHistory: { content: string; senderName: string }[] = [];
 const MAX_HISTORY = 10;
 
-// Create HTTP server
 const app = new Hono();
 const server = createServer();
 const wss = new WebSocketServer({ server });
 
-// Store active connections
 const clients = new Set<WebSocket>();
 
 wss.on('connection', (ws) => {
   clients.add(ws);
 
-  // Send initial data
   ws.send(JSON.stringify({
     type: 'init',
     girl: girl.name,
@@ -34,7 +30,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-// Broadcast message to all connected clients
 function broadcast(message: { content: string; senderName: string }) {
   const messageStr = JSON.stringify({
     type: 'message',
@@ -76,17 +71,6 @@ async function selectProvider() {
     }
 
     const provider = new OpenAIProvider(apiKey);
-    /*const models = await provider.getModels();
-    
-    const { model } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'model',
-        message: 'Select OpenAI model:',
-        choices: models
-      }
-    ]);*/
-
     provider.setActiveModel("gpt-4.1-nano");
     return provider;
   } else {
