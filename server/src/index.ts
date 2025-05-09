@@ -5,7 +5,7 @@ import { createServer } from 'http';
 import { OllamaProvider, OpenAIProvider } from './llm';
 
 const messageHistory: { content: string; senderName: string }[] = [];
-const MAX_HISTORY = 10;
+const MAX_HISTORY = 100;
 
 const server = createServer();
 const wss = new WebSocketServer({ server });
