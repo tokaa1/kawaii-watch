@@ -1,15 +1,12 @@
-import { Hono } from 'hono'
 import inquirer from 'inquirer';
 import { putOn } from './lover';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer } from 'http';
 import { OllamaProvider, OpenAIProvider } from './llm';
-import { Ollama } from 'ollama';
 
 const messageHistory: { content: string; senderName: string }[] = [];
 const MAX_HISTORY = 10;
 
-const app = new Hono();
 const server = createServer();
 const wss = new WebSocketServer({ server });
 
