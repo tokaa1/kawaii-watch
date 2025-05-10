@@ -215,7 +215,7 @@ function IntroPopUp() {
   return <div className="w-full h-full absolute z-[11] backdrop-blur-xs">
     <div
       className={`
-        w-[60%] h-[60%] flex flex-col gap-4 p-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+        w-[60%] h-[60%] flex flex-col gap-4 px-8 pt-7 pb-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
         backdrop-blur-xs z-[12] rounded-3xl border-[1px] border-solid border-white/20
         transition-opacity duration-500 ease-out
         ${visible ? "opacity-100" : "opacity-0"}
@@ -226,12 +226,11 @@ function IntroPopUp() {
     >
       <button
         onClick={() => setShow(false)}
-        className="absolute top-4 right-4 px-3 py-1 bg-zinc-600/30 text-pink-500 rounded-full text-sm font-medium hover:bg-zinc-600/50 transition cursor-pointer"
+        className="absolute top-8 right-8 px-3 py-1 bg-zinc-600/30 text-pink-500 rounded-full text-xl font-medium hover:bg-zinc-600/50 transition cursor-pointer"
         aria-label="Dismiss intro"
       >
         ×
       </button>
-      <img src="logo.png" className="absolute right-8 h-[18%] aspect-square" />
       <span className="font-sans text-white text-[4vw] font-light leading-tight">
         this is <span className="font-bold text-pink-500 text-[4vw]">kawaii-watch</span>
         <span className="ml-2 text-[1vw] text-white font-light italic">
@@ -247,6 +246,14 @@ function IntroPopUp() {
       <span className="font-sans text-white text-[1.3vw] text-yellow-200 leading-snug">
         they both don't have any context about each other, they learn through communicating!
       </span>
+      <button
+        className="absolute text-[2vw] bottom-8 left-1/2 -translate-x-1/2 w-auto px-6 py-2 bg-pink-200/80 border-2 border-pink-300 rounded-full text-pink-700 font-semibold shadow-md hover:bg-pink-100 hover:scale-105 transition-all duration-200 flex items-center gap-2 cursor-pointer"
+        onClick={() => {setShow(false)}}
+      >
+        close the popup, i wnna see!
+        <img src="logo.png" className="overflow-visible right-[-4rem] absolute h-[100%] object-cover aspect-square"/>
+        <img src="logo.png" className="overflow-visible left-[-4rem] absolute h-[100%] object-cover aspect-square"/>
+      </button>
     </div>
   </div>
 }
@@ -268,7 +275,7 @@ function ActionCluster() {
 
 function ActionButton({ children, onClick }: { children: any, onClick: () => void }) {
   return <button
-    className="px-1 bg-zinc-700 border-1 border-solid border-white/30 rounded-full animate-pulse text-white cursor-pointer hover:bg-zinc-700/50 transition-all"
+    className="px-1 bg-zinc-700/50 border-1 border-solid border-white/30 hover:border-white/70 hover:bg-zinc-700 rounded-full animate-pulse text-white cursor-pointer transition-all duration-300"
     onClick={onClick}
   >
     {children}
