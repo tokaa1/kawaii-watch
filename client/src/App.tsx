@@ -146,7 +146,7 @@ function App() {
         <div className="absolute flex flex-col top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-300/30 text-red-500 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
           Disconnected from server
           <button
-            className="bg-red-400 border-1 border-solid border-white/30 rounded-full animate-pulse text-white cursor-pointer hover:bg-red-400/50 transition-all"
+            className="bg-red-400/50 hover:bg-red-400 border-1 border-solid border-white/30 hover:border-white/70 rounded-full animate-pulse text-white/50 hover:text-white cursor-pointer transition-all duration-300"
             onClick={() => location.reload()}
           >
             Click here to refresh!
