@@ -1,101 +1,15 @@
-import inquirer from 'inquirer';
 import { putOn } from './lover';
 import { WebSocketServer, WebSocket } from 'ws';
-import { createServer } from 'http';
-import { OllamaProvider, OpenAIProvider } from './llm';
+import { createServer, Server } from 'http';
+import { selectProvider } from './cli';
 
-const messageHistory: { content: string; senderName: string }[] = [];
-const MAX_HISTORY = 100;
-
-const server = createServer();
-const wss = new WebSocketServer({ server });
-
-const clients = new Set<WebSocket>();
-
-wss.on('connection', (ws) => {
-  clients.add(ws);
-
-  ws.send(JSON.stringify({
-    type: 'init',
-    girl: girl.name,
-    boy: boy.name,
-    history: messageHistory
-  }));
-
-  ws.on('close', () => {
-    clients.delete(ws);
-  });
-});
-
-function broadcast(message: { content: string; senderName: string }) {
-  const messageStr = JSON.stringify({
-    type: 'message',
-    ...message
-  });
-
-  clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(messageStr);
-    }
-  });
+const port = 3001;
+type Message = {
+  content: string,
+  senderName: string
 }
-
-async function selectProvider() {
-  const { provider } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'provider',
-      message: 'Select LLM provider:',
-      choices: ['Ollama', 'OpenAI']
-    }
-  ]);
-
-  if (provider === 'OpenAI') {
-    let apiKey: string;
-    if (process.env.OPENAI_API_KEY) {
-      console.log("Found OpenAI API key in environment, skipping prompt.");
-      apiKey = process.env.OPENAI_API_KEY;
-    } else {
-      const result = await inquirer.prompt([
-        {
-          type: 'password',
-          name: 'apiKey',
-          message: 'Enter your OpenAI API key:',
-          default: ""
-        }
-      ]);
-      apiKey = result.apiKey;
-    }
-
-    const provider = new OpenAIProvider(apiKey);
-    provider.setActiveModel("gpt-4.1-nano");
-    return provider;
-  } else {
-    const { host } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'host',
-        message: 'Enter Ollama host (default: http://localhost:11434):',
-        default: 'http://localhost:11434'
-      }
-    ]);
-
-    const provider = new OllamaProvider(host);
-    const models = await provider.getModels();
-
-    const { model } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'model',
-        message: 'Select Ollama model:',
-        choices: models
-      }
-    ]);
-
-    provider.setActiveModel(model);
-    return provider;
-  }
-}
+type PacketType = 'init' | 'message';
+const MAX_HISTORY = 300;
 
 const girl = {
   name: "Vivian",
@@ -131,20 +45,50 @@ const boy = {
 };
 
 async function main() {
-  const llm = await selectProvider();
-  const port = 3001;
+  const httpServer = createServer()
+  const messageHistory: Message[] = [];
+  const wss = new WebSocketServer({ server: httpServer })
+  const clients = new Set<WebSocket>()
+  const broadcast = (type: PacketType, data: any) => {// we could techincally make joined package with proto defs but thats over engineering
+    const messageStr = JSON.stringify({
+      type: type,
+      data
+    });
 
+    clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(messageStr);
+      }
+    });
+  }
+
+  wss.on('connection', (ws) => {
+    clients.add(ws);
+
+    ws.send(JSON.stringify({
+      type: 'init',
+      data: {
+        girl: girl.name,
+        boy: boy.name,
+        history: messageHistory
+      }
+    }));
+
+    ws.on('close', () => {
+      clients.delete(ws);
+    });
+  });
+  const llm = await selectProvider();
   putOn(llm, girl, boy, "hey gng", 0.1, (message: string, senderName: string) => {
-    const messageObj = { content: message, senderName };
+    const messageObj: Message = { content: message, senderName };
     messageHistory.push(messageObj);
     if (messageHistory.length > MAX_HISTORY) {
       messageHistory.shift();
     }
-    broadcast(messageObj);
+    broadcast('message', messageObj);
   });
-
-  server.listen(port, () => {
-    console.log(`WebSocket server is running on ws://localhost:${port}`);
+  httpServer.listen(port, () => {
+    console.log(`\x1b[1;95mai's are loving on ws://localhost:${port}\x1b[0m`);
   });
 }
 
