@@ -2,7 +2,7 @@ import { createContext, useContext, useRef, useEffect, useCallback, useState } f
 
 const serverUrl = "ws://localhost:3001";
 
-type PacketType = 'init' | 'message';
+type PacketType = 'init' | 'message' | 'notification';
 type EventType = "open" | 'close';
 type PacketListener = (data: any) => void;
 type EventListener = () => void;

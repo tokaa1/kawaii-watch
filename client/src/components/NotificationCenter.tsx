@@ -1,7 +1,32 @@
+import { useServer } from "../context/server"
+import { useState, useRef, useEffect } from "react";
+
+type Notification = { id: number; text: string };
+
 export function NotificationCenter({ connected }: { connected: boolean }) {
-  return <div className="absolute flex flex-col top-4 left-1/2 -translate-x-1/2 gap-1 items-center justify-center">
-    {!connected && <DisconnectedNotification/>}
-  </div>
+  const server = useServer();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const nextId = useRef(0);
+
+  useEffect(() => {
+    server.onPacket['notification'] = (data) => {
+      const id = nextId.current++;
+      const text = data as string;
+      setNotifications((prev) => [...prev, { id, text }]);
+      setTimeout(() => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+      }, 2000);
+    };
+  }, [server]);
+
+  return (
+    <div className="absolute flex flex-col top-4 left-1/2 -translate-x-1/2 gap-1 items-center justify-center">
+      {!connected && <DisconnectedNotification />}
+      {notifications.map((n) => (
+        <TextNotification key={n.id}>{n.text}</TextNotification>
+      ))}
+    </div>
+  );
 }
 
 function TextNotification({children}: {children: any}) {

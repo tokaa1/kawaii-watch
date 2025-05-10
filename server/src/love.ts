@@ -1,9 +1,5 @@
 import { Message, LLMProvider } from "./llm";
-
-export type Lover = {
-  systemPrompt: string;
-  name: string;
-}
+import { Lover } from "./lovers";
 
 export type LoverMessage = {
   content: string;
@@ -11,17 +7,37 @@ export type LoverMessage = {
   role: "user" | "assistant";
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+export class LoveController {
+  private _stopped = false;
+  stop() {
+    this._stopped = true;
+  }
+  get stopped() {
+    return this._stopped;
+  }
+}
 
-export async function putOn(
-  llm: LLMProvider,
-  girl: Lover,
-  boy: Lover,
-  startMessage: string,
-  temperature: number = 0.4,
-  onMessage: (message: string, senderName: string) => void
-) {
+export type SimulateLoveParams = {
+  llm: LLMProvider;
+  girl: Lover;
+  boy: Lover;
+  startMessage: string;
+  temperature?: number;
+  onMessage: (message: string, senderName: string) => void;
+  controller?: LoveController;
+};
+
+export async function simulateLove(params: SimulateLoveParams) {
+  const {
+    llm,
+    girl,
+    boy,
+    startMessage,
+    temperature = 0.4,
+    onMessage,
+    controller
+  } = params;
+
   const messages: LoverMessage[] = [];
   const messageLimit = 300;
 
@@ -30,6 +46,8 @@ export async function putOn(
   let responseStart = Date.now();
 
   while (messages.length < messageLimit) {
+    if (controller?.stopped) break;
+
     responseStart = Date.now();
     const responseA = await llm.chat([
       {
@@ -42,7 +60,9 @@ export async function putOn(
       },
       ...messages as Message[],
     ], { temperature });
-    
+
+    if (controller?.stopped) break;
+
     messages.push({
       content: responseA,
       senderName: girl.name,
@@ -50,10 +70,14 @@ export async function putOn(
     });
     flipMessageRoles(messages);
     const aWordCount = getWordCount(responseA);
-    await sleep(Math.max(0, Date.now() - responseStart + random(aWordCount * 15, aWordCount * 25)));
+    const aSleepTime = getRandomWaitTimeMs(aWordCount);
+    await sleep(Math.max(0, aSleepTime - (Date.now() - responseStart)));
     onMessage(responseA, girl.name);
+
+    if (controller?.stopped) break;
+
     responseStart = Date.now();
-    
+
     const responseB = await llm.chat([
       {
         role: "system",
@@ -61,14 +85,17 @@ export async function putOn(
       },
       ...messages as Message[],
     ], { temperature });
-    
+
+    if (controller?.stopped) break;
+
     messages.push({
       content: responseB,
       senderName: boy.name,
       role: "user",
     });
     const bWordCount = getWordCount(responseB);
-    await sleep(Math.max(0, Date.now() - responseStart + random(bWordCount * 15, bWordCount * 25)));
+    const bSleepTime = getRandomWaitTimeMs(bWordCount);
+    await sleep(Math.max(0, bSleepTime - (Date.now() - responseStart)));
     onMessage(responseB, boy.name);
   }
 }
@@ -81,4 +108,11 @@ function flipMessageRoles(messages: LoverMessage[]) {
   for (let i = 0; i < messages.length; i++) {
     messages[i].role = messages[i].role === "user" ? "assistant" : "user";
   }
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+function getRandomWaitTimeMs(wordCount: number) {
+  return Math.min(random(wordCount * 40, wordCount * 50), 2000);
 }
