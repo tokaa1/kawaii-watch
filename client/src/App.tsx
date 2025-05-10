@@ -1,13 +1,16 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { IntroVisibilityProvider } from "./context/intro"
+import { ActionCluster } from "./components/ActionCluster"
+import { StatsBar } from "./components/StatsBar"
+import { Bubble } from "./components/Bubble"
+import { IntroPopUp } from "./components/IntroPopUp"
 
 type Gender = "boy" | "girl"
-
 type Message = {
   role: Gender
   content: string
   sender: string
 }
-
 type WSMessage = {
   type: 'init' | 'message'
   content?: string
@@ -15,26 +18,6 @@ type WSMessage = {
   girl?: string
   boy?: string
   history?: { content: string; senderName: string }[]
-}
-
-const IntroVisibilityContext = createContext({
-  show: false,
-  setShow: (val: boolean) => {}
-});
-function IntroVisibilityProvider({ children }: { children: any }) {
-  const [show, setShow] = useState((localStorage.getItem('showingIntro') || 'true') === 'true');
-  useEffect(() => {
-    localStorage.setItem('showingIntro', show ? 'true' : 'false');
-  }, [show]);
-
-  return <IntroVisibilityContext.Provider value={{
-    show, setShow
-  }}>
-    {children}
-  </IntroVisibilityContext.Provider>
-}
-const useIntroVisibility = () => {
-  return useContext(IntroVisibilityContext);
 }
 
 function App() {
@@ -103,7 +86,6 @@ function App() {
     }
   }, [messages])
 
-  // Fade-in state for the top-level div
   const [fadeIn, setFadeIn] = useState(false);
   useEffect(() => {
     setFadeIn(true);
@@ -165,121 +147,6 @@ function App() {
       )}
     </div>
   </IntroVisibilityProvider>
-}
-
-function Bubble({ children, left, className }: { children: any, left: boolean, className?: string }) {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    setVisible(true)
-  }, [])
-
-  return (
-    <div className={`w-full flex ${left ? "justify-start" : "justify-end"}`}>
-      <div
-        className={`
-          max-w-[70%]
-          w-fit px-4 py-2 rounded-2xl font-medium text-lg
-          transition-all duration-500 ease-out
-          break-words whitespace-pre-line
-          ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-          ${left ? "bg-white/10 text-pink-100 shadow-lg" : "bg-white/10 text-indigo-300 shadow-lg"}
-          hover:scale-105 transform transition-transform ${className}
-        `}
-        style={{
-          willChange: "opacity, transform",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.1)"
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  )
-}
-
-function IntroPopUp() {
-  const hexBgOpacity = '33';
-  const {show, setShow} = useIntroVisibility();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (show) {
-      setTimeout(() => setVisible(true), 10);
-    } else {
-      setVisible(false);
-    }
-  }, [show]);
-
-  if (!show) return null;
-
-  return <div className="w-full h-full absolute z-[11] backdrop-blur-xs">
-    <div
-      className={`
-        w-[60%] h-[60%] flex flex-col gap-4 px-8 pt-7 pb-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-        backdrop-blur-xs z-[12] rounded-3xl border-[1px] border-solid border-white/20
-        transition-opacity duration-500 ease-out
-        ${visible ? "opacity-100" : "opacity-0"}
-      `}
-      style={{
-        background: `linear-gradient(135deg, #ffe0ef${hexBgOpacity} 0%, #b7e5b4${hexBgOpacity} 60%, #c7eaff${hexBgOpacity} 100%)`
-      }}
-    >
-      <button
-        onClick={() => setShow(false)}
-        className="absolute top-8 right-8 px-3 py-1 bg-zinc-600/30 text-pink-500 rounded-full text-xl font-medium hover:bg-zinc-600/50 transition cursor-pointer"
-        aria-label="Dismiss intro"
-      >
-        ×
-      </button>
-      <span className="font-sans text-white text-[4vw] font-light leading-tight">
-        this is <span className="font-bold text-pink-500 text-[4vw]">kawaii-watch</span>
-        <span className="ml-2 text-[1vw] text-white font-light italic">
-          watch llms fall in love
-        </span>
-      </span>
-      <span className="font-sans text-white text-[1.5vw] leading-snug">
-        so pretty much, here you get to watch two llm's (<span className="text-pink-200">girl</span> and <span className="text-indigo-200">boy</span>) text each in <span className="font-bold text-red-400">REAL TIME</span>
-      </span>
-      <span className="font-sans text-white text-[1.5vw] leading-snug">
-        it's interesting because you get to experience the genius of LLM's, the stupid, and the room for improvement
-      </span>
-      <span className="font-sans text-white text-[1.3vw] text-yellow-200 leading-snug">
-        they both don't have any context about each other, they learn through communicating!
-      </span>
-      <button
-        className="absolute text-[2vw] bottom-8 left-1/2 -translate-x-1/2 w-auto px-6 py-2 bg-pink-200/80 border-2 border-pink-300 rounded-full text-pink-700 font-semibold shadow-md hover:bg-pink-100 hover:scale-105 transition-all duration-200 flex items-center gap-2 cursor-pointer"
-        onClick={() => {setShow(false)}}
-      >
-        close the popup, i wnna see!
-        <img src="logo.png" className="overflow-visible right-[-4rem] absolute h-[100%] object-cover aspect-square"/>
-        <img src="logo.png" className="overflow-visible left-[-4rem] absolute h-[100%] object-cover aspect-square"/>
-      </button>
-    </div>
-  </div>
-}
-
-function StatsBar({ boyName, girlName, messagesRecieved }: { boyName: string, girlName: string, messagesRecieved: number }) {
-  return <div className="px-10 py-4 flex flex-col justify-center absolute bottom-4 bg-zinc-900/80 border-1 border-pink-400/60 border-solid rounded-full z-[10]">
-    <span className="text-white font-sans text-center text-md">Currently texting: <span className="text-pink-300 font-bold">{girlName}</span> and <span className="text-indigo-400 font-bold">{boyName}</span></span>
-    <span className="text-white font-sans text-center text-xs">Messages exchanged (loaded): <span className="text-[rgb(23,255,120)] font-bold">{messagesRecieved}</span></span>
-  </div>
-}
-
-function ActionCluster() {
-  const {setShow} = useIntroVisibility();
-
-  return <div className="flex-row gap-1 absolute left-2 bottom-2">
-    <ActionButton onClick={() => setShow(true)}>open introduction (again)</ActionButton>
-  </div>
-}
-
-function ActionButton({ children, onClick }: { children: any, onClick: () => void }) {
-  return <button
-    className="px-1 bg-zinc-700/50 border-1 border-solid border-white/30 hover:border-white/70 hover:bg-zinc-700 rounded-full animate-pulse text-white cursor-pointer transition-all duration-300"
-    onClick={onClick}
-  >
-    {children}
-  </button>
 }
 
 export default App
