@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { createContext, useContext, useEffect, useRef, useState } from "react"
 
 type Gender = "boy" | "girl"
 
@@ -15,6 +15,26 @@ type WSMessage = {
   girl?: string
   boy?: string
   history?: { content: string; senderName: string }[]
+}
+
+const IntroVisibilityContext = createContext({
+  show: false,
+  setShow: (val: boolean) => {}
+});
+function IntroVisibilityProvider({ children }: { children: any }) {
+  const [show, setShow] = useState((localStorage.getItem('showingIntro') || 'true') === 'true');
+  useEffect(() => {
+    localStorage.setItem('showingIntro', show ? 'true' : 'false');
+  }, [show]);
+
+  return <IntroVisibilityContext.Provider value={{
+    show, setShow
+  }}>
+    {children}
+  </IntroVisibilityContext.Provider>
+}
+const useIntroVisibility = () => {
+  return useContext(IntroVisibilityContext);
 }
 
 function App() {
@@ -94,7 +114,7 @@ function App() {
     bubbles.push(<Bubble key={i} left={messages[i].role === "girl"}>{messages[i].content}</Bubble>)
   }
 
-  return (
+  return <IntroVisibilityProvider>
     <div
       className={`w-screen h-screen bg-black flex justify-center items-end transition-opacity duration-700 ${fadeIn ? "opacity-100" : "opacity-0"}`}
       style={{ opacity: fadeIn ? 1 : 0 }}
@@ -110,8 +130,8 @@ function App() {
           msOverflowStyle: "none",
         }}
       >
-        {shouldShowLoadingBubble && 
-          <Bubble 
+        {shouldShowLoadingBubble &&
+          <Bubble
             left={messages[messages.length - 1].role === "boy"}
             className="font-bold text-xs"
           >
@@ -144,7 +164,7 @@ function App() {
         <div className="absolute top-5 right-5 w-3 h-3 rounded-full bg-pink-400 animate-pulse shadow-lg" />
       )}
     </div>
-  )
+  </IntroVisibilityProvider>
 }
 
 function Bubble({ children, left, className }: { children: any, left: boolean, className?: string }) {
@@ -177,36 +197,35 @@ function Bubble({ children, left, className }: { children: any, left: boolean, c
   )
 }
 
-
 function IntroPopUp() {
   const hexBgOpacity = '33';
-  const [dismissed, setDismissed] = useState(true);
+  const {show, setShow} = useIntroVisibility();
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const wasDismissed = localStorage.getItem("introPopUpDismissed");
-    if (wasDismissed === "true") {
-      setDismissed(true);
+    if (show) {
+      setTimeout(() => setVisible(true), 10);
     } else {
-      setDismissed(false);
+      setVisible(false);
     }
-  }, []);
+  }, [show]);
 
-  const handleDismiss = () => {
-    setDismissed(true);
-    localStorage.setItem("introPopUpDismissed", "true");
-  };
+  if (!show) return null;
 
-  if (dismissed) return null;
-
-  return (
+  return <div className="w-full h-full absolute z-[11] backdrop-blur-xs">
     <div
-      className="w-[60%] h-[60%] flex flex-col gap-4 p-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 backdrop-blur-xs z-[1000] rounded-3xl border-[1px] border-solid border-white/20"
+      className={`
+        w-[60%] h-[60%] flex flex-col gap-4 p-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+        backdrop-blur-xs z-[12] rounded-3xl border-[1px] border-solid border-white/20
+        transition-opacity duration-500 ease-out
+        ${visible ? "opacity-100" : "opacity-0"}
+      `}
       style={{
         background: `linear-gradient(135deg, #ffe0ef${hexBgOpacity} 0%, #b7e5b4${hexBgOpacity} 60%, #c7eaff${hexBgOpacity} 100%)`
       }}
     >
       <button
-        onClick={handleDismiss}
+        onClick={() => setShow(false)}
         className="absolute top-4 right-4 px-3 py-1 bg-zinc-600/30 text-pink-500 rounded-full text-sm font-medium hover:bg-zinc-600/50 transition cursor-pointer"
         aria-label="Dismiss intro"
       >
@@ -229,19 +248,21 @@ function IntroPopUp() {
         they both don't have any context about each other, they learn through communicating!
       </span>
     </div>
-  )
+  </div>
 }
 
 function StatsBar({ boyName, girlName, messagesRecieved }: { boyName: string, girlName: string, messagesRecieved: number }) {
-  return <div className="px-10 py-4 flex flex-col justify-center absolute bottom-4 bg-zinc-900/80 border-1 border-pink-400/60 border-solid rounded-full z-[100001]">
+  return <div className="px-10 py-4 flex flex-col justify-center absolute bottom-4 bg-zinc-900/80 border-1 border-pink-400/60 border-solid rounded-full z-[10]">
     <span className="text-white font-sans text-center text-md">Currently texting: <span className="text-pink-300 font-bold">{girlName}</span> and <span className="text-indigo-400 font-bold">{boyName}</span></span>
     <span className="text-white font-sans text-center text-xs">Messages exchanged (loaded): <span className="text-[rgb(23,255,120)] font-bold">{messagesRecieved}</span></span>
   </div>
 }
 
 function ActionCluster() {
+  const {setShow} = useIntroVisibility();
+
   return <div className="flex-row gap-1 absolute left-2 bottom-2">
-    <ActionButton onClick={() => {localStorage.setItem("introPopUpDismissed", 'false')}}>open introduction (again)</ActionButton>
+    <ActionButton onClick={() => setShow(true)}>open introduction (again)</ActionButton>
   </div>
 }
 
