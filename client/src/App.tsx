@@ -24,10 +24,12 @@ function App() {
   const [boyName, setBoyName] = useState<string>("Undetermined")
   const wsRef = useRef<WebSocket | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [shouldShowLoadingBubble, setShouldShowLoadingBubble] = useState(false);
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:3001')
     wsRef.current = ws
+    let timeout: number | null = null;
 
     ws.onopen = () => {
       setConnected(true)
@@ -52,6 +54,14 @@ function App() {
           content: data.content,
           sender: data.senderName
         }
+        const wordCount = newMessage.content.split(' ').length;
+        setShouldShowLoadingBubble(false);
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        timeout = setTimeout(() => {
+          setShouldShowLoadingBubble(true);
+        }, Math.max(500, Math.min(wordCount * 38, 1000)));
         setMessages(prev => [...prev, newMessage])
       }
     }
@@ -61,7 +71,9 @@ function App() {
     }
 
     return () => {
-      ws.close()
+      ws.close();
+      if (timeout)
+        clearTimeout(timeout);
     }
   }, [girlName])
 
@@ -79,7 +91,7 @@ function App() {
 
   const bubbles = [];
   for (let i = messages.length - 1; i >= 0; i--) {
-    bubbles.push(<Bubble key={i} message={messages[i]} left={messages[i].role === "girl"} />)
+    bubbles.push(<Bubble key={i} left={messages[i].role === "girl"}>{messages[i].content}</Bubble>)
   }
 
   return (
@@ -98,6 +110,16 @@ function App() {
           msOverflowStyle: "none",
         }}
       >
+        {shouldShowLoadingBubble && 
+          <Bubble 
+            left={messages[messages.length - 1].role === "boy"}
+            className="font-bold text-xs"
+          >
+            <span className="animate-pulse">
+              ...
+            </span>
+          </Bubble>
+        }
         {bubbles}
       </div>
       {!connected && <>
@@ -125,7 +147,7 @@ function App() {
   )
 }
 
-function Bubble({ message, left }: { message: Message, left: boolean }) {
+function Bubble({ children, left, className }: { children: any, left: boolean, className?: string }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -142,14 +164,14 @@ function Bubble({ message, left }: { message: Message, left: boolean }) {
           break-words whitespace-pre-line
           ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
           ${left ? "bg-white/10 text-pink-100 shadow-lg" : "bg-white/10 text-indigo-300 shadow-lg"}
-          hover:scale-105 transform transition-transform
+          hover:scale-105 transform transition-transform ${className}
         `}
         style={{
           willChange: "opacity, transform",
           boxShadow: "0 4px 15px rgba(0,0,0,0.1)"
         }}
       >
-        {message.content}
+        {children}
       </div>
     </div>
   )
