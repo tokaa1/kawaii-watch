@@ -104,7 +104,7 @@ function App() {
       <ActionCluster></ActionCluster>
       <div
         ref={containerRef}
-        className="w-[100%] h-full px-[30%] py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
+        className="w-[100%] px-[calc((100%-min(72.5vh,85%))/2)] h-full py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
