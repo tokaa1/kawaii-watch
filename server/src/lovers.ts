@@ -13,7 +13,7 @@ export type Lover = {
   name: string;
   age: number;
   ethnicity: string;
-  university?: string;
+  university: string;
   systemPrompt: string;
 }
 

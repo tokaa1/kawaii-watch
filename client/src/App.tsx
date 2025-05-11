@@ -4,23 +4,17 @@ import { ActionCluster } from "./components/ActionCluster"
 import { StatsBar } from "./components/StatsBar"
 import { Bubble } from "./components/Bubble"
 import { IntroPopUp } from "./components/IntroPopUp"
-import { ServerContextProvider, useServer } from "./context/server"
+import { ServerContextProvider, useServer, type InitPacketData, type PacketDataLover } from "./context/server"
 import { NotificationCenter } from "./components/NotificationCenter"
+import { ProfilesDisplay } from "./components/ProfilesDisplay"
+import { LiveChat } from "./components/LiveChat"
 
+const showProfileCards = false;// profile cards are experimental
 type Gender = "boy" | "girl"
 type Message = {
   role: Gender
   content: string
   sender: string
-}
-type InitPacketData = {
-  boy: string,
-  girl: string,
-  history: MessagePacketData[]
-}
-type MessagePacketData = {
-  content: string,
-  senderName: string
 }
 
 function BaseApp() {
@@ -35,8 +29,20 @@ function BaseApp() {
 function App() {
   const [messages, setMessages] = useState<Message[]>([])
   const [connected, setConnected] = useState(false)
-  const [girlName, setGirlName] = useState<string>("Undetermined")
-  const [boyName, setBoyName] = useState<string>("Undetermined")
+  const [girl, setGirl] = useState<PacketDataLover>({
+    name: "Undetermined",
+    age: 0,
+    ethnicity: "Undetermined",
+    university: "Undetermined",
+    systemPrompt: "Undetermined"
+  })
+  const [boy, setBoy] = useState<PacketDataLover>({
+    name: "Undetermined",
+    age: 0,
+    ethnicity: "Undetermined",
+    university: "Undetermined",
+    systemPrompt: "Undetermined"
+  })
   const containerRef = useRef<HTMLDivElement>(null)
   const [shouldShowLoadingBubble, setShouldShowLoadingBubble] = useState(false);
   const server = useServer();
@@ -46,17 +52,17 @@ function App() {
       const packet: InitPacketData = data as InitPacketData;
       // convert history messages to our format
       const historyMessages: Message[] = packet.history.map(msg => ({
-        role: msg.senderName === packet.girl ? "girl" : "boy",
+        role: msg.senderName === packet.girl.name ? "girl" : "boy",
         content: msg.content,
         sender: msg.senderName
       }))
       setMessages(historyMessages)
-      setGirlName(packet.girl);
-      setBoyName(packet.boy);
+      setGirl(packet.girl);
+      setBoy(packet.boy);
     };
     server.onPacket['message'] = (data) => {
       const newMessage: Message = {
-        role: data.senderName === girlName ? "girl" : "boy",
+        role: data.senderName === girl.name ? "girl" : "boy",
         content: data.content,
         sender: data.senderName
       }
@@ -75,7 +81,7 @@ function App() {
     server.onEvent['close'] = () => setConnected(false)
 
     return () => clearTimeout(timeout);
-  }, [girlName, boyName]);
+  }, [girl, boy]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -100,16 +106,17 @@ function App() {
     >
       <IntroPopUp></IntroPopUp>
       <NotificationCenter connected={connected}></NotificationCenter>
-      <StatsBar boyName={boyName} girlName={girlName} messagesRecieved={messages.length}></StatsBar>
+      <StatsBar boyName={boy.name} girlName={girl.name} messagesRecieved={messages.length}></StatsBar>
       <ActionCluster></ActionCluster>
       <div
         ref={containerRef}
-        className="w-[100%] px-[calc((100%-min(72.5vh,85%))/2)] h-full py-10 flex flex-col gap-4 overflow-y-auto scrollbar-hide"
+        className={`w-[100%] px-[calc((100%-min(72.5vh,85%))/2)] h-full pb-26 flex flex-col gap-4 overflow-y-auto scrollbar-hide ${showProfileCards ? "py-4" : "py-12"}`}
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
       >
+        {showProfileCards && <ProfilesDisplay boy={boy} girl={girl}></ProfilesDisplay>}
         {shouldShowLoadingBubble && messages.length > 0 &&
           <Bubble
             left={messages[messages.length - 1].role === "boy"}

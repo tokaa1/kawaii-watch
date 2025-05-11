@@ -3,6 +3,22 @@ import { createContext, useContext, useRef, useEffect, useCallback, useState } f
 const serverUrl = "ws://localhost:3001";
 
 type PacketType = 'init' | 'message' | 'notification';
+export type InitPacketData = {
+  boy: PacketDataLover,
+  girl: PacketDataLover,
+  history: MessagePacketData[]
+}
+export type MessagePacketData = {
+  content: string,
+  senderName: string
+}
+export type PacketDataLover = {
+  name: string;
+  age: number;
+  ethnicity: string;
+  university: string;
+  systemPrompt: string;
+}
 type EventType = "open" | 'close';
 type PacketListener = (data: any) => void;
 type EventListener = () => void;

@@ -32,8 +32,8 @@ class State {
     if (!this.girl || !this.boy)
       throw new Error("createInitPacketData must only be called with a boy and girl in state");
     return {
-      girl: this.girl.name,
-      boy: this.boy.name,
+      girl: this.girl,
+      boy: this.boy,
       history: this.history
     }
   }
