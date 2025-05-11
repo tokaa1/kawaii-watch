@@ -2,9 +2,9 @@ import { LoveController, simulateLove } from './love'
 import { WebSocketServer, WebSocket } from 'ws'
 import { createServer, Server } from 'http'
 import { selectProvider } from './cli'
-import { boysArray, girlsArray, Lover, riku, yumi } from './lovers'
+import { boysArray, girlsArray, Lover, riku, starters, yumi } from './lovers'
 import { LLMProvider } from './llm'
-import { randomInt, textSimilarity } from './util'
+import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, textSimilarity } from './util'
 
 const port = 3001
 type Message = {
@@ -114,6 +114,16 @@ class State {
             avgPrevDistance = previousDistances.reduce((sum, val) => sum + val, 0) / previousDistances.length
           }
         }
+        let englishAlphabetAnalysis = true;
+        let englishPairAnalysis = true;
+        if (this.history.length >= 8) {
+          let sumOfHistory = "";
+          for (let i = 0; i < 8; i++) {
+            sumOfHistory += this.history[this.history.length - 1 - i].content;
+          }
+          englishAlphabetAnalysis = isEnglishAlphabetAnalysis(sumOfHistory)
+          englishPairAnalysis = isEnglishPairAnalysis(sumOfHistory);
+        }
 
         // update recursive latency avg
         const latency = Math.max(Date.now() - prevMessageTime, 0);
@@ -121,15 +131,14 @@ class State {
 
         if (wordCount > 80)
           stop('too much goddamn yapping!')
-        if (emojiCount > 20)
+        else if (emojiCount > 20)
           stop('they became stupid braindead... (too much emojis)') 
-        if (avgPrevDistance > 0.7)
+        else if (avgPrevDistance > 0.7)
           stop('stupid llm\'s got possessed (response loop)...')
-        if (recursiveAverageLatency >= 10000) {
+        else if (recursiveAverageLatency >= 10000)
           stop('someone got ghosted (high llm latency)...')
-        }
-        if (controller.stopped)
-          return;
+        else if (!englishAlphabetAnalysis || !englishPairAnalysis)
+          stop('dumbass llm\'s are speaking hieroglyphics (u live in america!!)')
         prevMessageTime = Date.now();
 
         this.history.push(messageObj)
@@ -142,7 +151,7 @@ class State {
         llm: this.llm,
         girl,
         boy,
-        startMessage: "hey gng",
+        startMessage: starters[randomInt(0, starters.length - 1)],
         temperature: randomInt(0.05, 0.6),
         onMessage,
         controller

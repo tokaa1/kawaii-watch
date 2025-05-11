@@ -23,3 +23,33 @@ export function textSimilarity(a: string, b: string): number {
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // inclusive
 export const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+const commonPairs = [
+  'th', 'he', 'in', 'er', 'an', 're', 'ed', 'on', 'es', 'st',
+  'en', 'at', 'to', 'nt', 'ha', 'nd', 'ou', 'ea', 'ng', 'as',
+  'or', 'ti', 'is', 'et', 'it', 'ar', 'te', 'se', 'hi', 'of',
+];
+
+// statistically tell if text is english by checking frequence of common pairs
+export function isEnglishPairAnalysis(text: string): boolean {
+  const lowerText = text.toLowerCase();
+  let pairCount = 0;
+
+  for (const pair of commonPairs) {
+    const occurrences = (lowerText.match(new RegExp(pair, 'g')) || []).length;
+    pairCount += occurrences;
+  }
+
+  const ratio = pairCount / text.length;
+  return ratio > 0.05; // Threshold for English-like text
+}
+
+export function isEnglishAlphabetAnalysis(input: string): boolean {
+  const nonEnglishRegex = /[Α-Ωабвгдежзийклмнопрстуфхцчшщъыьэюяא-תابتثجحخدذرزسشصضطظعغفقكلمنهويअ-हㄱ-ㅎあ-んアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンäöüßéàèçôùîâêûïë]/g;
+  const nonEnglishMatches = input.match(nonEnglishRegex) || [];
+  const alphabetMatches = input.match(/[a-zA-Z]/g) || [];
+  const totalLetters = nonEnglishMatches.length + alphabetMatches.length;
+  const nonEnglishPercentage = (nonEnglishMatches.length / totalLetters) * 100;
+
+  return nonEnglishPercentage < 5;  // Consider English if less than 5% non-English letters
+}

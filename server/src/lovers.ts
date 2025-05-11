@@ -405,3 +405,17 @@ export const girlsArray = [
 export const boysArray = [
   kevin, riku, joon, wei, chai, miguel, ethan, adam, aaron, arjun, bao, daniel
 ];
+export const starters = [
+  "hey gng",
+  "hey gang!",
+  "wsp!!",
+  "yooo",
+  "hi!",
+  "hi",
+  "heyyyyyyy",
+  "you're so cute!",
+  "you're so bad",
+  "what's up?",
+  "how are you?",
+  "hru?",
+]

@@ -110,7 +110,7 @@ function App() {
           msOverflowStyle: "none",
         }}
       >
-        {shouldShowLoadingBubble &&
+        {shouldShowLoadingBubble && messages.length > 0 &&
           <Bubble
             left={messages[messages.length - 1].role === "boy"}
             className="font-bold text-xs"
