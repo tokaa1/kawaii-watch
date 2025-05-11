@@ -11,7 +11,7 @@ type Message = {
   content: string,
   senderName: string
 }
-type PacketType = 'init' | 'message' | 'notification'
+type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote'
 const MAX_HISTORY = 300
 
 class State {
@@ -20,8 +20,9 @@ class State {
   private history: Message[] = []
   private clients: Set<WebSocket> = new Set<WebSocket>()
   public readonly running: boolean = true
-  private girl?: Lover
-  private boy?: Lover
+  public girl?: Lover
+  public boy?: Lover
+  private vote?: Vote
 
   constructor(llm: LLMProvider) {
     this.llm = llm
@@ -60,6 +61,14 @@ class State {
     wss.on('connection', (ws) => {
       this.clients.add(ws)
 
+      ws.on('message', (message) => {
+        const data = JSON.parse(message.toString())
+        console.log("data", data);
+        if (data.type === 'choice-vote' && this.vote) {
+          this.vote.onChoicePacket(ws, data.data)
+        }
+      })
+
       if (this.girl && this.boy) {
         ws.send(JSON.stringify({
           type: 'init',
@@ -81,6 +90,7 @@ class State {
       this.girl = girl
       this.boy = boy
       this.history = [];
+      this.vote = undefined;
       this.broadcast('init', this.createInitPacketData())
 
       const controller = new LoveController()
@@ -132,7 +142,7 @@ class State {
         if (wordCount > 80)
           stop('too much goddamn yapping!')
         else if (emojiCount > 20)
-          stop('they became stupid braindead... (too much emojis)') 
+          stop('they became stupid braindead... (too much emojis)')
         else if (avgPrevDistance > 0.7)
           stop('stupid llm\'s got possessed (response loop)...')
         else if (recursiveAverageLatency >= 15000)
@@ -146,6 +156,25 @@ class State {
           this.history.shift()
         }
         this.broadcast('message', messageObj)
+
+        // let's start a vote if this is the 15th message
+        if (this.history.length === 10 || this.history.length === 30) {
+          this.vote = new Vote({
+            state: this,
+            choices: ["continue!!", "skip, they're chopped 😭"],
+            question: `should we skip ${this.boy?.name.toLowerCase()} and ${this.girl?.name.toLowerCase()}? r they not meant to be?`,
+            durationMs: 7500,
+            onComplete: (choices, results) => {
+              const continues = results[choices[0]]
+              const skips = results[choices[1]]
+              if (continues >= skips)
+                return
+
+              stop('vote for skip wins!')
+            }
+          })
+          this.vote.run()
+        }
       }
       const params = {
         llm: this.llm,
@@ -160,6 +189,96 @@ class State {
         console.error(err)
       });
     }
+  }
+}
+
+type VoteParams = {
+  state: State
+  choices: string[]
+  question: string,
+  durationMs: number,
+  onComplete: (choices: string[], results: Record<string, number>) => void
+}
+
+class Vote {
+  private state: State
+  private votes: Map<WebSocket, string> = new Map<WebSocket, string>()
+  public readonly choices: string[]
+  public readonly question: string
+  private running = false
+  private timeout?: NodeJS.Timeout
+  private durationMs: number
+  private onComplete: (choices: string[], results: Record<string, number>) => void
+
+  constructor(params: VoteParams) {
+    this.state = params.state
+    this.choices = params.choices
+    this.question = params.question
+    this.durationMs = params.durationMs
+    this.onComplete = params.onComplete
+  }
+
+  public run() {
+    if (!this.state.boy || !this.state.girl)
+      throw new Error("runVote called with no boy or girl in state?");
+    this.running = true;
+    this.state.broadcast('start-vote', {
+      question: this.question,
+      choices: this.choices,
+      durationMs: this.durationMs
+    })
+    this.timeout = setTimeout(() => {
+      if (!this.running)
+        return;
+      const results = this.getResults()
+      this.state.broadcast('end-vote', {
+        result: results
+      })
+      this.running = false;
+      console.log("results", results);
+      this.onComplete(this.choices, results)
+    }, this.durationMs)
+  }
+
+  public stop() {
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+      this.timeout = undefined
+    }
+    this.running = false;
+  }
+
+  public getResults() {
+    const votes = Array.from(this.votes.values())
+    const results: Record<string, number> = {}
+    this.choices.forEach(choice => {
+      results[choice] = 0
+    })
+    votes.forEach(vote => {
+      results[vote]++
+    })
+    return results
+  }
+
+  public onChoicePacket(socket: WebSocket, data: any) {
+    if (!this.running)
+      return;
+    const choice = data as string
+    if (!this.choices.includes(choice)) {
+      console.log("invalid choice", choice);
+      return;
+    }
+
+    const originalVote = this.votes.get(socket)
+    if (originalVote === choice) {
+      console.log("same vote", choice);
+      return;
+    }
+
+    this.votes.set(socket, choice)
+    this.state.broadcast('progress-vote', {
+      result: this.getResults()
+    })
   }
 }
 

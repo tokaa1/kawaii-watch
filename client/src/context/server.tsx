@@ -2,7 +2,7 @@ import { createContext, useContext, useRef, useEffect, useCallback, useState } f
 
 const serverUrl = "ws://localhost:3001";
 
-type PacketType = 'init' | 'message' | 'notification';
+type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote';
 export type InitPacketData = {
   boy: PacketDataLover,
   girl: PacketDataLover,
@@ -44,7 +44,7 @@ export function ServerContextProvider({ children }: { children: any }) {
 
   const send = useCallback((type: PacketType, data: any) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type, ...data }));
+      wsRef.current.send(JSON.stringify({ type, data: data }));
     }
   }, []);
 
