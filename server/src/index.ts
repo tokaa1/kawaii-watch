@@ -135,7 +135,7 @@ class State {
           stop('they became stupid braindead... (too much emojis)') 
         else if (avgPrevDistance > 0.7)
           stop('stupid llm\'s got possessed (response loop)...')
-        else if (recursiveAverageLatency >= 10000)
+        else if (recursiveAverageLatency >= 15000)
           stop('someone got ghosted (high llm latency)...')
         else if (!englishAlphabetAnalysis || !englishPairAnalysis)
           stop('dumbass llm\'s are speaking hieroglyphics (u live in america!!)')
@@ -156,7 +156,9 @@ class State {
         onMessage,
         controller
       }
-      await simulateLove(params)
+      await simulateLove(params).catch((err) => {
+        console.error(err)
+      });
     }
   }
 }
