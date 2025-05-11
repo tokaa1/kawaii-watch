@@ -4,7 +4,9 @@
   "description": "Making AI's fall in love so we can watch.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cd ./client; bun run dev & cd ../server; bun run dev"
+    "dev": "cd ./client; bun run dev & cd ../server; bun run dev",
+    "client": "cd ./client; bun run dev",
+    "server": "cd ./server; bun run dev"
   },
   "repository": {
     "type": "git",
