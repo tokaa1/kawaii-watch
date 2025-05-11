@@ -97,11 +97,12 @@ class State {
       // so we can determine if the llms are just saying the same thing to each other
       let previousDistances = []
       let prevMessageTime = Number.MAX_VALUE;// ollama needs to load up, so first message might be slow
+      let recursiveAverageLatency = 0;
 
       const onMessage = (message: string, senderName: string) => {
         const messageObj: Message = { content: message, senderName }
 
-        // let's check if the message is 'bad'
+        // let's get stats for if the message is 'bad'
         const wordCount = messageObj.content.split(' ').length
         const emojiCount = (messageObj.content.match(/[\p{Emoji_Presentation}\p{Emoji}\u200d]+/gu) || []).length
         let avgPrevDistance = 0
@@ -114,13 +115,17 @@ class State {
           }
         }
 
+        // update recursive latency avg
+        const latency = Math.max(Date.now() - prevMessageTime, 0);
+        recursiveAverageLatency = (recursiveAverageLatency + latency) / 2;
+
         if (wordCount > 80)
           stop('Messages are getting too damn long!')
         if (emojiCount > 20)
           stop('They became braindead...')
         if (avgPrevDistance > 0.7)
           stop('They became NPC\'s...')
-        if (Date.now() - prevMessageTime >= 10000) {
+        if (recursiveAverageLatency >= 10000) {
           stop('Someone got ghosted...')
         }
         if (controller.stopped)
