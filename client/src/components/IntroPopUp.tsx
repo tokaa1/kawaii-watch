@@ -17,11 +17,11 @@ export function IntroPopUp() {
 
   if (!show) return null;
 
-  return <div className="w-full h-full absolute z-[11] backdrop-blur-xs">
+  return <div className="w-full h-full absolute z-[11] bg-black/80 will-change-opacity">
     <div
       className={`
           w-[60%] h-[60%] flex flex-col gap-4 px-8 pt-7 pb-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-          backdrop-blur-xs z-[12] rounded-3xl border-[1px] border-solid border-white/20
+          z-[12] rounded-3xl border-[1px] border-solid border-white/20
           transition-opacity duration-500 ease-out
           ${visible ? "opacity-100" : "opacity-0"}
         `}
