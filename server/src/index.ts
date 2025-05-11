@@ -120,13 +120,13 @@ class State {
         recursiveAverageLatency = (recursiveAverageLatency + latency) / 2;
 
         if (wordCount > 80)
-          stop('Messages are getting too damn long!')
+          stop('too much goddamn yapping!')
         if (emojiCount > 20)
-          stop('They became braindead...')
+          stop('they became stupid braindead... (too much emojis)') 
         if (avgPrevDistance > 0.7)
-          stop('They became NPC\'s...')
+          stop('stupid llm\'s got possessed (response loop)...')
         if (recursiveAverageLatency >= 10000) {
-          stop('Someone got ghosted...')
+          stop('someone got ghosted (high llm latency)...')
         }
         if (controller.stopped)
           return;
