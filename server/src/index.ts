@@ -12,6 +12,7 @@ type Message = {
   senderName: string
 }
 type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote'
+type NotificationColor = 'green' | 'pink' | 'yellow'
 const MAX_HISTORY = 300
 
 class State {
@@ -49,6 +50,13 @@ class State {
       if (client.readyState === WebSocket.OPEN) {
         client.send(messageStr)
       }
+    })
+  }
+
+  broadcastNotification(text: string, color: NotificationColor = 'pink') {
+    this.broadcast('notification', {
+      text,
+      color
     })
   }
 
@@ -92,15 +100,19 @@ class State {
       this.history = [];
       this.vote = undefined;
       this.broadcast('init', this.createInitPacketData())
+      this.broadcastNotification(`found a new match! ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()}!`, 'yellow')
 
       const controller = new LoveController()
       // called by the message handler when something is wrong 
       // with the llm's and we wanna restart
       // like when the bots get into an infinite glazing loop or cya later loop
-      const stop = (reason: string) => {
+      const stop = (reason: string, color: NotificationColor = 'pink') => {
         controller.stop();
-
-        this.broadcast('notification', `Finding a new match! (${reason})`);
+        this.broadcastNotification(`Finding a new match! (${reason})`, color);
+      }
+      const stopFullReason = (reason: string, color: NotificationColor = 'pink') => {
+        controller.stop();
+        this.broadcastNotification(reason, color);
       }
 
       // we will store the previous levenhstein distances
@@ -162,15 +174,16 @@ class State {
           this.vote = new Vote({
             state: this,
             choices: ["continue!!", "skip, they're chopped 😭"],
-            question: `should we skip ${this.boy?.name.toLowerCase()} and ${this.girl?.name.toLowerCase()}? r they not meant to be?`,
+            question: `should we skip ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()}? r they not meant to be?`,
             durationMs: 7500,
             onComplete: (choices, results) => {
               const continues = results[choices[0]]
               const skips = results[choices[1]]
-              if (continues >= skips)
+              if (continues >= skips) {
+                this.broadcastNotification(`vote failed: ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()} are continuing!`, 'green')
                 return
-
-              stop('vote for skip wins!')
+              }
+              stopFullReason(`vote complete: ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()} are getting skipped! finding a new match...`, 'green')
             }
           })
           this.vote.run()
@@ -235,7 +248,6 @@ class Vote {
         result: results
       })
       this.running = false;
-      console.log("results", results);
       this.onComplete(this.choices, results)
     }, this.durationMs)
   }
@@ -265,13 +277,11 @@ class Vote {
       return;
     const choice = data as string
     if (!this.choices.includes(choice)) {
-      console.log("invalid choice", choice);
       return;
     }
 
     const originalVote = this.votes.get(socket)
     if (originalVote === choice) {
-      console.log("same vote", choice);
       return;
     }
 

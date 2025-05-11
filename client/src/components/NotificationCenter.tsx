@@ -1,7 +1,8 @@
 import { useServer } from "../context/server"
 import { useState, useRef, useEffect } from "react";
 
-type Notification = { id: number; text: string; visible: boolean };
+type Notification = { id: number; text: string; visible: boolean; color: NotificationColor };
+type NotificationColor = 'green' | 'pink' | 'yellow'
 type Vote = {
   question: string;
   choices: string[];
@@ -17,8 +18,8 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
   useEffect(() => {
     server.onPacket['notification'] = (data) => {
       const id = nextId.current++;
-      const text = data as string;
-      setNotifications((prev) => [...prev, { id, text, visible: true }]);
+      const { text, color } = data as { text: string, color: NotificationColor };
+      setNotifications((prev) => [...prev, { id, text, visible: true, color }]);
 
       // Start fade-out after 2000ms
       setTimeout(() => {
@@ -37,7 +38,7 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
       const vote = data as Vote;
       setVote(vote);
     };
-    server.onPacket['end-vote'] = (data) => {
+    server.onPacket['end-vote'] = (_) => {
       setVote(null);
     };
   }, [server]);
@@ -46,7 +47,7 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
     <div className="absolute flex flex-col top-4 left-1/2 -translate-x-1/2 gap-1 items-center justify-center z-[11]">
       {!connected && <DisconnectedNotification />}
       {notifications.map((n) => (
-        <TextNotification key={n.id} visible={n.visible}>{n.text}</TextNotification>
+        <TextNotification key={n.id} visible={n.visible} color={n.color}>{n.text}</TextNotification>
       ))}
       {vote && <VoteNotification key={nextId.current} vote={vote} />}
     </div>
@@ -114,9 +115,16 @@ function VoteNotification({ vote }: { vote: Vote }) {
     </div>
   </BaseNotification>
 }
-function TextNotification({ children, visible = true }: { children: any, visible?: boolean }) {
+function TextNotification({ children, visible = true, color }: { children: any, visible?: boolean, color: NotificationColor }) {
+  let className = 'bg-pink-100/80 text-pink-700 border-1 border-pink-300 border-solid font-sans font-bold'
+  if (color === 'green') {
+    className = 'bg-green-100/80 text-green-700 border-1 border-green-300 border-solid font-sans font-bold'
+  } else if (color === 'yellow') {
+    className = 'bg-yellow-100/80 text-yellow-700 border-1 border-yellow-300 border-solid font-sans font-bold'
+  }
+
   return <BaseNotification
-    className="bg-pink-100/80 text-pink-700 border-1 border-pink-300 border-solid font-sans font-bold"
+    className={className}
     visible={visible}
   >
     {children}
