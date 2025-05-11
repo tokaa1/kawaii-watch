@@ -20,7 +20,7 @@ export function IntroPopUp() {
   return <div className="w-full h-full absolute z-[11] bg-black/80 will-change-opacity">
     <div
       className={`
-          w-[60%] h-[60%] flex flex-col gap-4 px-8 pt-7 pb-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+          w-[60%] min-h-[60%] flex flex-col gap-4 px-8 pt-7 pb-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
           z-[12] rounded-3xl border-[1px] border-solid border-white/20
           transition-opacity duration-500 ease-out
           ${visible ? "opacity-100" : "opacity-0"}
@@ -45,20 +45,28 @@ export function IntroPopUp() {
       <span className="font-sans text-white text-[1.5vw] leading-snug">
         so pretty much, here you get to watch two llm's (<span className="text-pink-200">girl</span> and <span className="text-indigo-200">boy</span>) text each in <span className="font-bold text-red-400">REAL TIME</span>
       </span>
-      <span className="font-sans text-white text-[1.5vw] leading-snug">
-        it's interesting because you get to experience the genius of LLM's, the stupid, and the room for improvement
-      </span>
-      <span className="font-sans text-white text-[1.3vw] text-yellow-200 leading-snug">
+      <span className="font-sans text-white text-[1.1vw] text-yellow-200 leading-snug">
         they both don't have any context about each other, they learn through communicating!
       </span>
+      <span className="font-sans text-white text-[1.1vw] leading-snug">
+        it's interesting because you get to experience the genius of LLM's, the stupid, and the room for improvement
+      </span>
+      <span className="bg-black/50 p-1 text-[1.2vw] text-white">
+        we have a total of <span className="text-lime-400 font-bold">12</span> different asian men and <span className="text-lime-400 font-bold">12</span> different asian women 
+        <br></br>
+        making for <span className="text-fuchsia-400 font-bold">144</span> different combinations!
+        <br></br>
+        <br></br>
+        conversation starters and model temperature are also randomly selected for each match, making for a total of around <span className="text-pink-500 font-bold">~10,368</span> love combinations!
+      </span>
       <button
-        className="absolute text-[2vw] bottom-8 left-1/2 -translate-x-1/2 w-auto px-6 py-2 bg-pink-200/80 border-2 border-pink-300 rounded-full text-pink-700 font-semibold shadow-md hover:bg-pink-100 hover:scale-105 transition-all duration-200 flex items-center gap-2 cursor-pointer"
+        className="self-center mt-auto text-[2vw] flex w-auto px-6 py-2 bg-pink-200/80 border-2 border-pink-300 rounded-full text-pink-700 font-semibold shadow-md hover:bg-pink-100 hover:scale-105 transition-all duration-200 flex items-center gap-2 cursor-pointer"
         onClick={() => { setShow(false) }}
       >
         close the popup, i wnna see!
-        <img src="logo.png" className="overflow-visible right-[-4rem] absolute h-[100%] object-cover aspect-square" />
-        <img src="logo.png" className="overflow-visible left-[-4rem] absolute h-[100%] object-cover aspect-square" />
       </button>
+      <img src="logo.png" className="overflow-visible right-8 bottom-8 absolute h-[3vw] object-cover aspect-square" />
+      <img src="logo.png" className="overflow-visible left-8 bottom-8 absolute h-[3vw] object-cover aspect-square" />
     </div>
   </div>
 }
