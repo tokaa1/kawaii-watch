@@ -2,7 +2,7 @@ import { useServer } from "../context/server"
 import { useState, useRef, useEffect } from "react";
 
 type Notification = { id: number; text: string; visible: boolean; color: NotificationColor };
-type NotificationColor = 'green' | 'pink' | 'yellow'
+type NotificationColor = 'green' | 'pink' | 'yellow' | 'red'
 type Vote = {
   question: string;
   choices: string[];
@@ -121,6 +121,8 @@ function TextNotification({ children, visible = true, color }: { children: any, 
     className = 'bg-green-100/80 text-green-700 border-1 border-green-300 border-solid font-sans font-bold'
   } else if (color === 'yellow') {
     className = 'bg-yellow-100/80 text-yellow-700 border-1 border-yellow-300 border-solid font-sans font-bold'
+  } else if (color === 'red') {
+    className = 'bg-red-100/80 text-red-700 border-1 border-red-300 border-solid font-sans font-bold'
   }
 
   return <BaseNotification

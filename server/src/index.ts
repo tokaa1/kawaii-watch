@@ -12,7 +12,7 @@ type Message = {
   senderName: string
 }
 type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote'
-type NotificationColor = 'green' | 'pink' | 'yellow'
+type NotificationColor = 'green' | 'pink' | 'yellow' | 'red'
 const MAX_HISTORY = 300
 
 class State {
@@ -121,6 +121,10 @@ class State {
       let prevMessageTime = Number.MAX_VALUE;// ollama needs to load up, so first message might be slow
       let recursiveAverageLatency = 0;
 
+      // Track distances for same-sender message similarity
+      const girlPreviousDistances: number[] = [];
+      const boyPreviousDistances: number[] = [];
+
       const onMessage = (message: string, senderName: string) => {
         const messageObj: Message = { content: message, senderName }
 
@@ -136,6 +140,24 @@ class State {
             avgPrevDistance = previousDistances.reduce((sum, val) => sum + val, 0) / previousDistances.length
           }
         }
+
+        // calculate same-sender message similarity using history
+        let senderAvgDistance = 0;
+        const isGirl = senderName === this.girl?.name;
+        const prevDistancesArray = isGirl ? girlPreviousDistances : boyPreviousDistances;
+        
+        // last message from the same sender
+        const prevSenderMessage = this.history.slice().reverse().find(msg => msg.senderName === senderName);
+        
+        if (prevSenderMessage) {
+          const senderDistance = textSimilarity(messageObj.content, prevSenderMessage.content);
+          prevDistancesArray.push(senderDistance);
+          if (prevDistancesArray.length > 3) {
+            prevDistancesArray.shift();
+          }
+          senderAvgDistance = prevDistancesArray.reduce((sum, val) => sum + val, 0) / prevDistancesArray.length;
+        }
+
         let englishAlphabetAnalysis = true;
         let englishPairAnalysis = true;
         if (this.history.length >= 8) {
@@ -157,6 +179,8 @@ class State {
           stop('they became stupid braindead... (too much emojis)')
         else if (avgPrevDistance > 0.7)
           stop('stupid llm\'s got possessed (response loop)...')
+        else if (senderAvgDistance > 0.8)
+          stop(`${senderName} keeps saying the same thing (ur getting no huzz)`)
         else if (recursiveAverageLatency >= 15000)
           stop('someone got ghosted (high llm latency)...')
         else if (!englishAlphabetAnalysis || !englishPairAnalysis)
@@ -180,10 +204,10 @@ class State {
               const continues = results[choices[0]]
               const skips = results[choices[1]]
               if (continues >= skips) {
-                this.broadcastNotification(`vote failed: ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()} are continuing!`, 'green')
+                this.broadcastNotification(`vote failed: ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()} are continuing!`, 'red')
                 return
               }
-              stopFullReason(`vote complete: ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()} are getting skipped! finding a new match...`, 'green')
+              stopFullReason(`vote complete: ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()} are getting skipped! finding a new match...`, 'pink')
             }
           })
           this.vote.run()
