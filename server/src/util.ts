@@ -19,3 +19,7 @@ export function textSimilarity(a: string, b: string): number {
   const maxLength = Math.max(a.length, b.length);
   return maxLength === 0 ? 1 : 1 - distance / maxLength;
 }
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// inclusive
+export const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;

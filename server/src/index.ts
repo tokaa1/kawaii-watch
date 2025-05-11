@@ -4,7 +4,7 @@ import { createServer, Server } from 'http'
 import { selectProvider } from './cli'
 import { boysArray, girlsArray, Lover, riku, yumi } from './lovers'
 import { LLMProvider } from './llm'
-import { textSimilarity } from './util'
+import { randomInt, textSimilarity } from './util'
 
 const port = 3001
 type Message = {
@@ -76,9 +76,9 @@ class State {
   async loveLoop() {
     // start the loop
     while (this.running) {
-      const girl = yumi
+      const girl = girlsArray[randomInt(0, girlsArray.length - 1)];
+      const boy = boysArray[randomInt(0, boysArray.length - 1)];
       this.girl = girl
-      const boy = riku
       this.boy = boy
       this.history = [];
       this.broadcast('init', this.createInitPacketData())
@@ -96,6 +96,7 @@ class State {
       // we will store the previous levenhstein distances
       // so we can determine if the llms are just saying the same thing to each other
       let previousDistances = []
+      let prevMessageTime = Number.MAX_VALUE;// ollama needs to load up, so first message might be slow
 
       const onMessage = (message: string, senderName: string) => {
         const messageObj: Message = { content: message, senderName }
@@ -119,6 +120,12 @@ class State {
           stop('They became braindead...')
         if (avgPrevDistance > 0.7)
           stop('They became NPC\'s...')
+        if (Date.now() - prevMessageTime >= 10000) {
+          stop('Someone got ghosted...')
+        }
+        if (controller.stopped)
+          return;
+        prevMessageTime = Date.now();
 
         this.history.push(messageObj)
         if (this.history.length > MAX_HISTORY) {
@@ -131,7 +138,7 @@ class State {
         girl,
         boy,
         startMessage: "hey gng",
-        temperature: 0.1,
+        temperature: randomInt(0.05, 0.6),
         onMessage,
         controller
       }

@@ -1,5 +1,6 @@
 import { Message, LLMProvider } from "./llm";
 import { Lover } from "./lovers";
+import { randomInt, sleep } from "./util";
 
 export type LoverMessage = {
   content: string;
@@ -39,13 +40,10 @@ export async function simulateLove(params: SimulateLoveParams) {
   } = params;
 
   const messages: LoverMessage[] = [];
-  const messageLimit = 300;
-
   onMessage(startMessage, boy.name);
 
   let responseStart = Date.now();
-
-  while (messages.length < messageLimit) {
+  while (!controller?.stopped) {
     if (controller?.stopped) break;
 
     responseStart = Date.now();
@@ -110,9 +108,6 @@ function flipMessageRoles(messages: LoverMessage[]) {
   }
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-
 function getRandomWaitTimeMs(wordCount: number) {
-  return Math.min(random(wordCount * 40, wordCount * 50), 2000);
+  return Math.max(800, Math.min(randomInt(wordCount * 40, wordCount * 50), 2000));
 }

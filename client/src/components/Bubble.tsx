@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 
+const debugECount = false;
+
 export function Bubble({ children, left, className }: { children: any, left: boolean, className?: string }) {
   const [visible, setVisible] = useState(false)
 
@@ -25,6 +27,9 @@ export function Bubble({ children, left, className }: { children: any, left: boo
         }}
       >
         {children}
+        {debugECount && typeof children === 'string' && <span className="text-xs">
+          {`E count: ${((children as string).toLowerCase().match(/e/g) || []).length}`}
+        </span>}
       </div>
     </div>
   )
