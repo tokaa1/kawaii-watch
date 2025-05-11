@@ -33,6 +33,7 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
       }, 2000);
     };
     server.onPacket['start-vote'] = (data) => {
+      nextId.current++;// we will use this as a key for vote since sometimes identicial votes get optimized
       const vote = data as Vote;
       setVote(vote);
     };
@@ -47,7 +48,7 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
       {notifications.map((n) => (
         <TextNotification key={n.id} visible={n.visible}>{n.text}</TextNotification>
       ))}
-      {vote && <VoteNotification vote={vote} />}
+      {vote && <VoteNotification key={nextId.current} vote={vote} />}
     </div>
   );
 }
@@ -56,8 +57,23 @@ function VoteNotification({ vote }: { vote: Vote }) {
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const server = useServer();
   const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const fadeOutDuration = 150;
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    // Fade in
+    setTimeout(() => {
+      setMounted(true);
+      setVisible(true);
+    }, 10);
+
+    // Start fade out
+    const fadeOutTimer = setTimeout(() => {
+      setVisible(false);
+    }, vote.durationMs - fadeOutDuration);
+
+    return () => clearTimeout(fadeOutTimer);
+  }, []);
 
   useEffect(() => {
     if (selectedChoice) {
@@ -66,28 +82,34 @@ function VoteNotification({ vote }: { vote: Vote }) {
   }, [selectedChoice]);
 
   return <BaseNotification
-    className="overflow-hidden bg-green-200/100 text-green-700 border-1 border-green-300 border-solid font-sans font-bold px-8"
-    visible={true}
+    className="overflow-hidden text-green-700 border-1 border-green-300 border-solid font-sans font-bold px-8"
+    visible={visible}
   >
-    <div
-      className={`absolute w-full h-full bg-green-200/100 transition-all transtition-transform duration-[${vote.durationMs}]`}
+    <div className="absolute px-8 py-2 inset-0 bg-green-200/80 transform transition-transform ease-out"
       style={{
         transform: mounted ? 'translateX(0)' : 'translateX(-100%)',
-        willChange: 'transform'
-      }}
-    >
-    </div>
+        transitionDuration: `${vote.durationMs - fadeOutDuration}ms`,
+        transitionTimingFunction: 'linear'
+      }} />
     <div className="relative z-10 flex flex-col">
       {vote.question}
-      {vote.choices.map((choice) => (
-        <button
-          key={choice}
-          className="bg-green-400/50 border-1 border-green-200/50 hover:border-green-200 border-solid px-4 m-auto hover:bg-green-400 rounded-full text-lg text-black/50 hover:text-black cursor-pointer transition-all duration-300"
-          onClick={() => setSelectedChoice(choice)}
-        >
-          {choice}
-        </button>
-      ))}
+      <div className="flex gap-2 justify-center">
+        {vote.choices.map((choice) => (
+          <button
+            key={choice}
+            className={`
+              px-4 py-1 rounded-full text-md cursor-pointer transition-all duration-300
+              ${selectedChoice === choice 
+                ? 'bg-green-500 text-white border-2 border-green-400 shadow-lg scale-[1.02]' 
+                : 'bg-green-400/30 text-black/70 border border-green-200/50 hover:bg-green-400/50 hover:text-black hover:border-green-300'
+              }
+            `}
+            onClick={() => setSelectedChoice(choice)}
+          >
+            {choice}
+          </button>
+        ))}
+      </div>
       <span className="font-light font-black text-center">You chose: <span className="font-bold text-green-700">{selectedChoice}</span></span>
     </div>
   </BaseNotification>
