@@ -2,6 +2,8 @@ import { Message, LLMProvider } from "./llm";
 import { Lover } from "./lovers";
 import { randomInt, sleep } from "./util";
 
+export type Gender = "boy" | "girl"
+
 export type LoverMessage = {
   content: string;
   senderName: string;
@@ -10,7 +12,7 @@ export type LoverMessage = {
 
 export type StarterMessage = {
   message: string;
-  role: "boy" | "girl";
+  role: Gender;
 }
 
 export class LoveController {
@@ -29,7 +31,7 @@ export type SimulateLoveParams = {
   boy: Lover;
   startMessage: StarterMessage;
   temperature?: number;
-  onMessage: (message: string, senderName: string) => void;
+  onMessage: (message: string, role: Gender, senderName: string) => void;
   controller?: LoveController;
 };
 
@@ -44,8 +46,9 @@ export async function simulateLove(params: SimulateLoveParams) {
     controller
   } = params;
 
+  startMessage.message = startMessage.message.replace('{NAME}', startMessage.role === "boy" ? boy.name : girl.name);
   const messages: LoverMessage[] = [];
-  onMessage(startMessage.message, startMessage.role === "boy" ? boy.name : girl.name);
+  onMessage(startMessage.message, startMessage.role, startMessage.role === "boy" ? boy.name : girl.name);
   messages.push({
     content: startMessage.message,
     senderName: startMessage.role === "boy" ? boy.name : girl.name,
@@ -79,7 +82,7 @@ export async function simulateLove(params: SimulateLoveParams) {
     const aWordCount = getWordCount(responseA);
     const aSleepTime = getRandomWaitTimeMs(aWordCount);
     await sleep(Math.max(0, aSleepTime - (Date.now() - responseStart)));
-    onMessage(responseA, personA.name);
+    onMessage(responseA, personA.name === girl.name ? "girl" : "boy", personA.name);
 
     if (controller?.stopped) break;
 
@@ -103,7 +106,7 @@ export async function simulateLove(params: SimulateLoveParams) {
     const bWordCount = getWordCount(responseB);
     const bSleepTime = getRandomWaitTimeMs(bWordCount);
     await sleep(Math.max(0, bSleepTime - (Date.now() - responseStart)));
-    onMessage(responseB, personB.name);
+    onMessage(responseB, personB.name === girl.name ? "girl" : "boy", personB.name);
   }
 }
 

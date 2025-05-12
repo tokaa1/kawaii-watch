@@ -9,7 +9,8 @@ import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, textSimila
 const port = 3001
 type Message = {
   content: string,
-  senderName: string
+  senderName: string,
+  role: Gender
 }
 type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote'
 type NotificationColor = 'green' | 'pink' | 'yellow' | 'red'
@@ -133,8 +134,8 @@ class State {
       const girlPreviousDistances: number[] = [];
       const boyPreviousDistances: number[] = [];
 
-      const onMessage = (message: string, senderName: string) => {
-        const messageObj: Message = { content: message, senderName }
+      const onMessage = (message: string, role: Gender, senderName: string) => {
+        const messageObj: Message = { content: message, senderName, role }
 
         // let's get stats for if the message is 'bad'
         const wordCount = messageObj.content.split(' ').length
@@ -213,7 +214,7 @@ class State {
             state: this,
             choices: ["continue!!", "skip, they're chopped 😭"],
             question: `should we skip ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()}? r they not meant to be?`,
-            durationMs: 7500,
+            durationMs: 10*1000,
             onComplete: (choices, results) => {
               const continues = results[choices[0]]
               const skips = results[choices[1]]
@@ -299,6 +300,10 @@ class Vote {
       clearTimeout(this.timeout)
       this.timeout = undefined
     }
+    const results = this.getResults()
+    this.state.broadcast('end-vote', {
+      result: results
+    })
     this.running = false;
   }
 

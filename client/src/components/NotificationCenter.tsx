@@ -8,12 +8,14 @@ type Vote = {
   choices: string[];
   durationMs: number;
 }
+type VoteResult = Record<string, number>;
 
 export function NotificationCenter({ connected }: { connected: boolean }) {
   const server = useServer();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const nextId = useRef(0);
   const [vote, setVote] = useState<Vote | null>(null);
+  const [voteResults, setVoteResults] = useState<VoteResult>({});
 
   useEffect(() => {
     server.onPacket['notification'] = (data) => {
@@ -37,9 +39,20 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
       nextId.current++;// we will use this as a key for vote since sometimes identicial votes get optimized
       const vote = data as Vote;
       setVote(vote);
+      // Initialize empty results for each choice
+      const initialResults: VoteResult = {};
+      vote.choices.forEach(choice => {
+        initialResults[choice] = 0;
+      });
+      setVoteResults(initialResults);
+    };
+    server.onPacket['progress-vote'] = (data) => {
+      const { result } = data as { result: VoteResult };
+      setVoteResults(result);
     };
     server.onPacket['end-vote'] = (_) => {
       setVote(null);
+      setVoteResults({});
     };
   }, [server]);
 
@@ -49,17 +62,20 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
       {notifications.map((n) => (
         <TextNotification key={n.id} visible={n.visible} color={n.color}>{n.text}</TextNotification>
       ))}
-      {vote && <VoteNotification key={nextId.current} vote={vote} />}
+      {vote && <VoteNotification key={nextId.current} vote={vote} results={voteResults} />}
     </div>
   );
 }
 
-function VoteNotification({ vote }: { vote: Vote }) {
+function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }) {
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const server = useServer();
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const fadeOutDuration = 150;
+
+  // Calculate total votes
+  const totalVotes = Object.values(results).reduce((sum, count) => sum + count, 0);
 
   useEffect(() => {
     // Fade in
@@ -83,7 +99,7 @@ function VoteNotification({ vote }: { vote: Vote }) {
   }, [selectedChoice]);
 
   return <BaseNotification
-    className="overflow-hidden text-green-700 border-1 border-green-300 border-solid font-sans font-bold px-8"
+    className="overflow-hidden text-green-700 border-1 border-green-300 border-solid font-sans font-bold px-8 !rounded-[3.5rem]"
     visible={visible}
   >
     <div className="absolute px-8 py-2 inset-0 bg-green-200/80 transform transition-transform ease-out"
@@ -111,7 +127,30 @@ function VoteNotification({ vote }: { vote: Vote }) {
           </button>
         ))}
       </div>
-      <span className="font-light font-black text-center">You chose: <span className="font-bold text-green-700">{selectedChoice}</span></span>
+      
+      {totalVotes > 0 && (
+        <div className="mt-1 w-full">
+          {vote.choices.map((choice) => {
+            const voteCount = results[choice] || 0;
+            const percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+            
+            return (
+              <div key={`progress-${choice}`} className="mb-1 text-sm">
+                <div className="flex justify-between mb-1">
+                  <span>{choice}</span>
+                  <span>{voteCount} votes ({percentage}%)</span>
+                </div>
+                <div className="w-full bg-green-100 rounded-full h-2.5">
+                  <div 
+                    className="bg-green-500 h-2.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   </BaseNotification>
 }

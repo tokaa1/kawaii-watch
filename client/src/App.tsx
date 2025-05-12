@@ -62,7 +62,7 @@ function App() {
     };
     server.onPacket['message'] = (data) => {
       const newMessage: Message = {
-        role: data.senderName === girl.name ? "girl" : "boy",
+        role: data.role,
         content: data.content,
         sender: data.senderName
       }
