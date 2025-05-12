@@ -7,7 +7,6 @@ import { IntroPopUp } from "./components/IntroPopUp"
 import { ServerContextProvider, useServer, type InitPacketData, type PacketDataLover } from "./context/server"
 import { NotificationCenter } from "./components/NotificationCenter"
 import { ProfilesDisplay } from "./components/ProfilesDisplay"
-import { LiveChat } from "./components/LiveChat"
 
 const showProfileCards = false;// profile cards are experimental
 type Gender = "boy" | "girl"
