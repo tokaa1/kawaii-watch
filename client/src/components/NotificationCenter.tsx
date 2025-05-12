@@ -122,7 +122,7 @@ function TextNotification({ children, visible = true, color }: { children: any, 
   } else if (color === 'yellow') {
     className = 'bg-yellow-100/80 text-yellow-700 border-1 border-yellow-300 border-solid font-sans font-bold'
   } else if (color === 'red') {
-    className = 'bg-red-100/80 text-red-700 border-1 border-red-300 border-solid font-sans font-bold'
+    className = 'bg-red-950/80 text-red-100 border-1 border-red-500 border-solid font-sans font-bold'
   }
 
   return <BaseNotification
