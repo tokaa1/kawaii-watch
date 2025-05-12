@@ -2,7 +2,7 @@ import { createContext, useContext, useRef, useEffect, useCallback, useState } f
 
 const serverUrl = "ws://localhost:3001";
 
-type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote';
+type PacketType = 'init' | 'stats' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote';
 export type InitPacketData = {
   boy: PacketDataLover,
   girl: PacketDataLover,

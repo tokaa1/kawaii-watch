@@ -2,7 +2,7 @@ import { LoveController, simulateLove } from './love'
 import { WebSocketServer, WebSocket } from 'ws'
 import { createServer, Server } from 'http'
 import { selectProvider } from './cli'
-import { boysArray, girlsArray, Lover, starters } from './lovers'
+import { boysArray, boyStarters, Gender, girlsArray, girlStarters, Lover } from './lovers'
 import { LLMProvider } from './llm'
 import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, textSimilarity } from './util'
 
@@ -83,6 +83,14 @@ class State {
           data: this.createInitPacketData()
         }))
       }
+      ws.send(JSON.stringify({
+        type: 'stats',
+        data: {
+          boys: boysArray.length,
+          girls: girlsArray.length,
+          starters: boyStarters.length + girlStarters.length
+        }
+      }))
 
       ws.on('close', () => {
         this.clients.delete(ws)
@@ -219,11 +227,15 @@ class State {
           this.vote.run()
         }
       }
+      const whoseStarting: Gender = randomInt(0, 1) === 0 ? "boy" : "girl"
       const params = {
         llm: this.llm,
         girl,
         boy,
-        startMessage: starters[randomInt(0, starters.length - 1)],
+        startMessage: {
+          role: whoseStarting,
+          message: whoseStarting === "boy" ? boyStarters[randomInt(0, boyStarters.length - 1)] : girlStarters[randomInt(0, girlStarters.length - 1)]
+        },
         temperature: randomInt(0.05, 0.6),
         onMessage,
         controller

@@ -1,11 +1,26 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { useIntroVisibility } from "../context/intro";
+import { useServer } from "../context/server";
+
+type Stats = {
+  boys: number,
+  girls: number,
+  starters: number,
+}
 
 export function IntroPopUp() {
   const hexBgOpacity = '33';
   const { show, setShow } = useIntroVisibility();
   const [visible, setVisible] = useState(false);
+  const server = useServer();
+  const [stats, setStats] = useState<Stats>({ boys: 12, girls: 12, starters: 10 })
+
+  useEffect(() => {
+    server.onPacket['stats'] = (data: any) => {
+      setStats(data as Stats);
+    }
+  }, []);
 
   useEffect(() => {
     if (show) {
@@ -52,12 +67,12 @@ export function IntroPopUp() {
         it's interesting because you get to experience the genius of LLM's, the stupid, and the room for improvement
       </span>
       <span className="bg-black/50 p-1 text-[1.2vw] text-white">
-        we have a total of <span className="text-lime-400 font-bold">12</span> different asian men and <span className="text-lime-400 font-bold">12</span> different asian women 
+        we have a total of <span className="text-lime-400 font-bold">{stats.boys}</span> different asian men and <span className="text-lime-400 font-bold">{stats.girls}</span> different asian women
         <br></br>
-        making for <span className="text-fuchsia-400 font-bold">144</span> different combinations!
+        making for <span className="text-fuchsia-400 font-bold">{stats.boys * stats.girls}</span> different combinations!
         <br></br>
         <br></br>
-        conversation starters and model temperature are also randomly selected for each match, making for a total of around <span className="text-pink-500 font-bold">~10,368</span> love combinations!
+        conversation starters and model temperature are also randomly selected for each match, making for a total of around <span className="text-pink-500 font-bold">~{stats.boys * stats.girls * stats.starters * 5}</span> love combinations!
       </span>
       <button
         className="self-center mt-auto text-[2vw] flex w-auto px-6 py-2 bg-pink-200/80 border-2 border-pink-300 rounded-full text-pink-700 font-semibold shadow-md hover:bg-pink-100 hover:scale-105 transition-all duration-200 flex items-center gap-2 cursor-pointer"
