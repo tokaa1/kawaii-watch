@@ -2,7 +2,7 @@ import { LoveController, simulateLove } from './love'
 import { WebSocketServer, WebSocket } from 'ws'
 import { createServer, Server } from 'http'
 import { selectProvider } from './cli'
-import { boysArray, girlsArray, Lover, riku, starters, yumi } from './lovers'
+import { boysArray, girlsArray, Lover, starters } from './lovers'
 import { LLMProvider } from './llm'
 import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, textSimilarity } from './util'
 
@@ -121,7 +121,7 @@ class State {
       let prevMessageTime = Number.MAX_VALUE;// ollama needs to load up, so first message might be slow
       let recursiveAverageLatency = 0;
 
-      // Track distances for same-sender message similarity
+      // track adjecent message similarity
       const girlPreviousDistances: number[] = [];
       const boyPreviousDistances: number[] = [];
 
@@ -194,7 +194,13 @@ class State {
         this.broadcast('message', messageObj)
 
         // let's start a vote if this is the 15th message
-        if (this.history.length === 10 || this.history.length === 30) {
+        let shouldRunVote = false;
+        if (this.history.length <= 80) {
+          shouldRunVote = (this.history.length === 15 || this.history.length === 35 || this.history.length === 50 || this.history.length === 80);
+        } else {
+          shouldRunVote = (this.history.length % 60 === 0);
+        }
+        if (shouldRunVote) {
           this.vote = new Vote({
             state: this,
             choices: ["continue!!", "skip, they're chopped 😭"],
