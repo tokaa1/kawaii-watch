@@ -56,15 +56,15 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
     };
   }, [server]);
 
-  return (
-    <div className="absolute flex flex-col top-4 left-1/2 -translate-x-1/2 gap-1 items-center justify-center z-[11]">
+  return <>
+    <div className="absolute flex flex-col bottom-24 left-1/2 -translate-x-1/2 gap-1 items-center justify-center z-[11]">
       {!connected && <DisconnectedNotification />}
       {notifications.map((n) => (
         <TextNotification key={n.id} visible={n.visible} color={n.color}>{n.text}</TextNotification>
       ))}
       {vote && <VoteNotification key={nextId.current} vote={vote} results={voteResults} />}
     </div>
-  );
+  </>
 }
 
 function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }) {
@@ -78,13 +78,11 @@ function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }
   const totalVotes = Object.values(results).reduce((sum, count) => sum + count, 0);
 
   useEffect(() => {
-    // Fade in
     setTimeout(() => {
       setMounted(true);
       setVisible(true);
     }, 10);
 
-    // Start fade out
     const fadeOutTimer = setTimeout(() => {
       setVisible(false);
     }, vote.durationMs - fadeOutDuration);
@@ -99,7 +97,7 @@ function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }
   }, [selectedChoice]);
 
   return <BaseNotification
-    className="overflow-hidden text-green-700 border-1 border-green-300 border-solid font-sans font-bold px-8 !rounded-[3.5rem]"
+    className="overflow-hidden text-green-700 border-1 border-green-300 border-solid font-sans font-bold px-8 !rounded-[3.5rem] text-sm"
     visible={visible}
   >
     <div className="absolute px-8 py-2 inset-0 bg-green-200/80 transform transition-transform ease-out"
@@ -109,13 +107,13 @@ function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }
         transitionTimingFunction: 'linear'
       }} />
     <div className="relative z-10 flex flex-col">
-      {vote.question}
+      <span className="text-xs">{vote.question}</span>
       <div className="flex gap-2 justify-center">
         {vote.choices.map((choice) => (
           <button
             key={choice}
             className={`
-              px-4 py-1 rounded-full text-md cursor-pointer transition-all duration-300
+              px-4 py-1 rounded-full text-sm cursor-pointer transition-all duration-300
               ${selectedChoice === choice 
                 ? 'bg-green-500 text-white border-2 border-green-400 shadow-lg scale-[1.02]' 
                 : 'bg-green-400/30 text-black/70 border border-green-200/50 hover:bg-green-400/50 hover:text-black hover:border-green-300'
@@ -135,7 +133,7 @@ function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }
             const percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
             
             return (
-              <div key={`progress-${choice}`} className="mb-1 text-sm">
+              <div key={`progress-${choice}`} className="mb-1 text-xs">
                 <div className="flex justify-between mb-1">
                   <span>{choice}</span>
                   <span>{voteCount} votes ({percentage}%)</span>
