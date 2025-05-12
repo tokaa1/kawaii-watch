@@ -72,7 +72,6 @@ class State {
 
       ws.on('message', (message) => {
         const data = JSON.parse(message.toString())
-        console.log("data", data);
         if (data.type === 'choice-vote' && this.vote) {
           this.vote.onChoicePacket(ws, data.data)
         }
