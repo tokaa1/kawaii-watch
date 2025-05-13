@@ -83,7 +83,11 @@ export class OpenRouterProvider implements LLMProvider {
   constructor(apiKey: string) {
     this.client = new OpenAI({
       apiKey,
-      baseURL: "https://openrouter.ai/api/v1"
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultHeaders: {
+        'HTTP-Referer': 'https://kawaii-watch.nightly.pw',
+        'X-Title': 'kawaii-watch'
+      }
     });
   }
 
