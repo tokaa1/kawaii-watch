@@ -1,4 +1,4 @@
-import { OpenAIProvider, OllamaProvider } from "./llm";
+import { OpenAIProvider, OllamaProvider, OpenRouterProvider } from "./llm";
 import inquirer from 'inquirer';
 
 export async function selectProvider() {
@@ -7,7 +7,7 @@ export async function selectProvider() {
       type: 'list',
       name: 'provider',
       message: 'Select LLM provider:',
-      choices: ['Ollama', 'OpenAI']
+      choices: ['Ollama', 'OpenAI', 'OpenRouter (llama3.2:3b)']
     }
   ]);
 
@@ -30,6 +30,24 @@ export async function selectProvider() {
 
     const provider = new OpenAIProvider(apiKey);
     provider.setActiveModel("gpt-4.1-nano");
+    return provider;
+  } else if (provider === 'OpenRouter (llama3.2:3b)') {
+    let apiKey: string;
+    if (process.env.OPENROUTER_API_KEY) {
+      console.log("Found OpenRouter API key in environment, skipping prompt.");
+      apiKey = process.env.OPENROUTER_API_KEY;
+    } else {
+      const result = await inquirer.prompt([
+        {
+          type: 'password',
+          name: 'apiKey',
+          message: 'Enter your OpenRouter API key:',
+        }
+      ]);
+      apiKey = result.apiKey;
+    }
+
+    const provider = new OpenRouterProvider(apiKey);
     return provider;
   } else {
     const { host } = await inquirer.prompt([

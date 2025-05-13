@@ -22,7 +22,7 @@ export class OllamaProvider implements LLMProvider {
 
   async getModels(): Promise<string[]> {
     const response = await this.client.list();
-    return response.models.map(model => model.name);
+    return response.models.map((model: any) => model.name);
   }
 
   setActiveModel(model: string): void {
@@ -54,7 +54,7 @@ export class OpenAIProvider implements LLMProvider {
 
   async getModels(): Promise<string[]> {
     const models = await this.client.models.list({});
-    return models.data.map(model => model.id);
+    return models.data.map((model: any) => model.id);
   }
 
   setActiveModel(model: string): void {
@@ -73,4 +73,39 @@ export class OpenAIProvider implements LLMProvider {
 
     return response.choices[0].message.content || "";
   }
-} 
+}
+
+// OpenRouterProvider uses OpenAI client but always uses llama3.2:3b via OpenRouter API
+export class OpenRouterProvider implements LLMProvider {
+  private client: OpenAI;
+  private readonly model: string = "meta-llama/llama-3.2-3b-instruct:free";
+
+  constructor(apiKey: string) {
+    this.client = new OpenAI({
+      apiKey,
+      baseURL: "https://openrouter.ai/api/v1"
+    });
+  }
+
+  async getModels(): Promise<string[]> {
+    return [this.model];
+  }
+
+  setActiveModel(_model: string): void {
+
+  }
+
+  async chat(messages: Message[], options?: { temperature?: number }) {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: this.model,
+        messages,
+        temperature: options?.temperature ?? 1.0
+      });
+      return response.choices[0].message.content || "";
+    } catch (error) {
+      console.error("Error calling OpenRouter API:", error);
+      throw error;
+    }
+  }
+}

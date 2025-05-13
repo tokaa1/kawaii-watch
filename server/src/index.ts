@@ -4,7 +4,7 @@ import { createServer, Server } from 'http'
 import { selectProvider } from './cli'
 import { boysArray, boyStarters, Gender, girlsArray, girlStarters, Lover } from './lovers'
 import { LLMProvider } from './llm'
-import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, textSimilarity } from './util'
+import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, sleep, textSimilarity } from './util'
 
 const port = 3001
 type Message = {
@@ -99,8 +99,14 @@ class State {
   }
 
   async loveLoop() {
+    let lastMatchStartTime = Date.now()
     // start the loop
     while (this.running) {
+      if (Date.now() - lastMatchStartTime < 100) {
+        // if llm provider fails, we might end up spamming them because we keep looping too fast
+        await sleep(1000)
+      }
+      lastMatchStartTime = Date.now()
       const girl = girlsArray[randomInt(0, girlsArray.length - 1)];
       const boy = boysArray[randomInt(0, boysArray.length - 1)];
       this.girl = girl
