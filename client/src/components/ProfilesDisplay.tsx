@@ -39,7 +39,6 @@ function ethnicityToColor(ethnicity: string): string {// gpt made these
 export function ProfilesDisplay({ boy, girl }: { boy: PacketDataLover; girl: PacketDataLover; }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 10); }, []);
-  const hexBgOpacity = '40';
   return (
     <div className={`self-center sticky top-0 flex gap-8 z-[10] transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}`}>
       <MiniProfile lover={girl} textColor="text-pink-400" borderColor="border-pink-300" />
