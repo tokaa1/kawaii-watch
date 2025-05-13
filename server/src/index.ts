@@ -8,8 +8,8 @@ import { boysArray, boyStarters, Gender, girlsArray, girlStarters, Lover } from 
 import { LLMProvider } from './llm'
 import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, sleep, textSimilarity } from './util'
 
-const port = 3001
-const sslPort = 3443
+const port = process.env.HTTP_PORT || 3001
+const sslPort = process.env.HTTPS_PORT || 443
 //const INACTIVE_TIMEOUT_MS = 3 * 60 * 1000 // 3 minutes
 const INACTIVE_TIMEOUT_MS = 10 * 1000 // 10 seconds
 type Message = {
@@ -44,7 +44,7 @@ class State {
       }
       this.httpsServer = createHttpsServer(sslOptions)
     } catch (error) {
-      console.warn('no SSL certs found, so no HTTPS/wss !!.', error)
+      console.warn('no SSL certs found, so no HTTPS/wss !!.')
       this.httpsServer = this.httpServer // fallback
     }
   }

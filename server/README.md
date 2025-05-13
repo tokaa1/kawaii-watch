@@ -1,6 +1,12 @@
 ### the server for kawaii-watch
 realtime websocket
 
+#### valid env vars
+- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `HTTPS_PORT`, default: 443
+- `HTTP_PORT`, default: 3001
+
 install dependencies:
 ```sh
 bun install

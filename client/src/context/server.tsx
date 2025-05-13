@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef, useEffect, useCallback, useState } from "react";
 
-const serverUrl = "wss://localhost:3443";
+const serverUrl = import.meta.env.DEV ? "ws://localhost:3001" : "wss://kawaii-watch-server.nightly.pw";
 
 type PacketType = 'init' | 'stats' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote';
 export type InitPacketData = {
