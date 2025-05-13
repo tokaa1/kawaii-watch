@@ -78,7 +78,7 @@ export class OpenAIProvider implements LLMProvider {
 // OpenRouterProvider uses OpenAI client but always uses llama3.2:3b via OpenRouter API
 export class OpenRouterProvider implements LLMProvider {
   private client: OpenAI;
-  private readonly model: string = "meta-llama/llama-3.2-3b-instruct:free";
+  private readonly model: string = "meta-llama/llama-3.1-8b-instruct";
 
   constructor(apiKey: string) {
     this.client = new OpenAI({

@@ -72,7 +72,7 @@ export function IntroPopUp() {
         making for <span className="text-fuchsia-400 font-bold">{stats.boys * stats.girls}</span> different combinations!
         <br></br>
         <br></br>
-        conversation starters and model temperature are also randomly selected for each match, making for a total of around <span className="text-pink-500 font-bold">~{stats.boys * stats.girls * stats.starters * 5}</span> love combinations!
+        conversation starters and model temperature are also randomly selected for each match, making for a total of around <span className="text-pink-500 font-bold">~{stats.boys * stats.girls * stats.starters * 3 /* we're saying 3 temperatures, it's really a range*/}</span> love combinations!
       </span>
       <button
         className="self-center mt-auto text-[2vw] flex w-auto px-6 py-2 bg-pink-200/80 border-2 border-pink-300 rounded-full text-pink-700 font-semibold shadow-md hover:bg-pink-100 hover:scale-105 transition-all duration-200 flex items-center gap-2 cursor-pointer"

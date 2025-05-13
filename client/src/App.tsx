@@ -8,7 +8,7 @@ import { ServerContextProvider, useServer, type InitPacketData, type PacketDataL
 import { NotificationCenter } from "./components/NotificationCenter"
 import { ProfilesDisplay } from "./components/ProfilesDisplay"
 
-const showProfileCards = false;// profile cards are experimental
+const showProfileCards = true;// profile cards are experimental
 type Gender = "boy" | "girl"
 type Message = {
   role: Gender
