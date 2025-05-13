@@ -46,7 +46,7 @@ export async function simulateLove(params: SimulateLoveParams) {
     controller
   } = params;
 
-  startMessage.message = startMessage.message.replace('{NAME}', startMessage.role === "boy" ? boy.name : girl.name);
+  startMessage.message = startMessage.message.replace('{NAME}', (startMessage.role === "boy" ? boy.name : girl.name).toLowerCase());
   const messages: LoverMessage[] = [];
   onMessage(startMessage.message, startMessage.role, startMessage.role === "boy" ? boy.name : girl.name);
   messages.push({
