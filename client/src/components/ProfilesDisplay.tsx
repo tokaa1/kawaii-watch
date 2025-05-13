@@ -42,13 +42,13 @@ export function ProfilesDisplay({ boy, girl }: { boy: PacketDataLover; girl: Pac
   const hexBgOpacity = '40';
   return (
     <div className={`self-center sticky top-0 flex gap-8 z-[10] transition-all duration-700 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}`}>
-      <MiniProfile lover={girl} textColor="text-pink-400" borderColor="border-pink-300" bgColor={`#ffe0ef${hexBgOpacity}`} />
-      <MiniProfile lover={boy} textColor="text-indigo-400" borderColor="border-indigo-300" bgColor={`#c7eaff${hexBgOpacity}`} />
+      <MiniProfile lover={girl} textColor="text-pink-400" borderColor="border-pink-300" />
+      <MiniProfile lover={boy} textColor="text-indigo-400" borderColor="border-indigo-300" />
     </div>
   );
 }
 
-function MiniProfile({ lover, textColor, borderColor, bgColor }: { lover: PacketDataLover; textColor: string; borderColor: string; bgColor: string; }) {
+function MiniProfile({ lover, textColor, borderColor }: { lover: PacketDataLover; textColor: string; borderColor: string; }) {
   const ethnicityColor = ethnicityToColor(lover.ethnicity);
   const textShadow = "0 1px 4px rgba(0,0,0,0.25), 0 0.5px 0px #fff2";
   return (
