@@ -6,6 +6,7 @@ realtime websocket
 - `OPENROUTER_API_KEY`
 - `HTTPS_PORT`, default: 443
 - `HTTP_PORT`, default: 3001
+- `PROVIDER` (automatically specify the provider to skip CLI inquiry), options: `openrouter`, `openai`
 
 install dependencies:
 ```sh
