@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef, useEffect, useCallback, useState } from "react";
 
-const serverUrl = "ws://localhost:3001";
+const serverUrl = "wss://localhost:3443";
 
 type PacketType = 'init' | 'stats' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote';
 export type InitPacketData = {

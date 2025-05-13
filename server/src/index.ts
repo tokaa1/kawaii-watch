@@ -1,12 +1,15 @@
 import { LoveController, simulateLove } from './love'
 import { WebSocketServer, WebSocket } from 'ws'
 import { createServer, Server } from 'http'
+import { createServer as createHttpsServer } from 'https'
+import { readFileSync } from 'fs'
 import { selectProvider } from './cli'
 import { boysArray, boyStarters, Gender, girlsArray, girlStarters, Lover } from './lovers'
 import { LLMProvider } from './llm'
 import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, sleep, textSimilarity } from './util'
 
 const port = 3001
+const sslPort = 3443
 //const INACTIVE_TIMEOUT_MS = 3 * 60 * 1000 // 3 minutes
 const INACTIVE_TIMEOUT_MS = 10 * 1000 // 10 seconds
 type Message = {
@@ -21,6 +24,7 @@ const MAX_HISTORY = 300
 class State {
   private llm: LLMProvider
   private httpServer: Server
+  private httpsServer: Server
   private history: Message[] = []
   private clients: Set<WebSocket> = new Set<WebSocket>()
   public readonly running: boolean = true
@@ -32,6 +36,17 @@ class State {
   constructor(llm: LLMProvider) {
     this.llm = llm
     this.httpServer = createServer()
+    
+    try {
+      const sslOptions = {
+        key: readFileSync('./ssl/key.pem'),
+        cert: readFileSync('./ssl/cert.pem')
+      }
+      this.httpsServer = createHttpsServer(sslOptions)
+    } catch (error) {
+      console.warn('no SSL certs found, so no HTTPS/wss !!.', error)
+      this.httpsServer = this.httpServer // fallback
+    }
   }
 
   createInitPacketData(): any {
@@ -66,10 +81,27 @@ class State {
 
   runSync() {
     this.loveLoop()
-    this.httpServer.listen(port, () => {// this is sync - dont forget
+    
+    this.httpServer.listen(port, () => {
       console.log(`\x1b[195mai's are loving on ws://localhost:${port}\x1b[0m`)
     })
+    
+    if (this.httpsServer !== this.httpServer) {
+      this.httpsServer.listen(sslPort, () => {
+        console.log(`\x1b[195mai's are securely loving on wss://localhost:${sslPort}\x1b[0m`)
+      })
+    }
+    
     const wss = new WebSocketServer({ server: this.httpServer })
+    this.setupWebSocketServer(wss)
+    
+    if (this.httpsServer !== this.httpServer) {
+      const wssSecure = new WebSocketServer({ server: this.httpsServer })
+      this.setupWebSocketServer(wssSecure)
+    }
+  }
+  
+  setupWebSocketServer(wss: WebSocketServer) {
     wss.on('connection', (ws) => {
       this.clients.add(ws)
       this.lastActiveTime = Date.now()

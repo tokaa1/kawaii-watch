@@ -10,3 +10,11 @@ To run:
 ```sh
 bun run dev
 ```
+
+### ssl config
+for https: drop in a cert and key in ssl/cert.pem and ssl/key.pem (in this directory, 'server')
+
+- HTTP ws: `ws://localhost:3001`
+- HTTPS ws: `wss://localhost:3443`
+
+a https server will be ran if you have those two files present
