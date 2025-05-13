@@ -7,6 +7,8 @@ import { LLMProvider } from './llm'
 import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, sleep, textSimilarity } from './util'
 
 const port = 3001
+//const INACTIVE_TIMEOUT_MS = 3 * 60 * 1000 // 3 minutes
+const INACTIVE_TIMEOUT_MS = 10 * 1000 // 10 seconds
 type Message = {
   content: string,
   senderName: string,
@@ -25,6 +27,7 @@ class State {
   public girl?: Lover
   public boy?: Lover
   private vote?: Vote
+  private lastActiveTime: number = Date.now()
 
   constructor(llm: LLMProvider) {
     this.llm = llm
@@ -69,6 +72,7 @@ class State {
     const wss = new WebSocketServer({ server: this.httpServer })
     wss.on('connection', (ws) => {
       this.clients.add(ws)
+      this.lastActiveTime = Date.now()
 
       ws.on('message', (message) => {
         const data = JSON.parse(message.toString())
@@ -94,6 +98,7 @@ class State {
 
       ws.on('close', () => {
         this.clients.delete(ws)
+        this.lastActiveTime = Date.now()
       })
     })
   }
@@ -102,6 +107,15 @@ class State {
     let lastMatchStartTime = Date.now()
     // start the loop
     while (this.running) {
+      // we're gonna stop running if we fell off
+      if (this.clients.size === 0) {
+        const inactiveTime = Date.now() - this.lastActiveTime
+        if (inactiveTime >= INACTIVE_TIMEOUT_MS) {
+          await sleep(100) // check every 100ms
+          continue
+        }
+      }
+
       if (Date.now() - lastMatchStartTime < 100) {
         // if llm provider fails, we might end up spamming them because we keep looping too fast
         await sleep(1000)
