@@ -67,7 +67,7 @@ export function NotificationCenter({ connected }: { connected: boolean }) {
   </>
 }
 
-function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }) {
+function VoteNotification({ vote, results, key }: { vote: Vote, results: VoteResult, key: number }) {
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const server = useServer();
   const [mounted, setMounted] = useState(false);
@@ -100,7 +100,7 @@ function VoteNotification({ vote, results }: { vote: Vote, results: VoteResult }
     className="overflow-hidden text-green-700 border-1 border-green-300 border-solid font-sans font-bold px-8 !rounded-[3.5rem] text-sm"
     visible={visible}
   >
-    <div className="absolute px-8 py-2 inset-0 bg-green-200/80 transform transition-transform ease-out"
+    <div key={key} className="absolute px-8 py-2 inset-0 bg-green-200/80 transform transition-transform ease-out"
       style={{
         transform: mounted ? 'translateX(0)' : 'translateX(-100%)',
         transitionDuration: `${vote.durationMs - fadeOutDuration}ms`,
