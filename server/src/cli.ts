@@ -7,7 +7,7 @@ export async function selectProvider() {
       type: 'list',
       name: 'provider',
       message: 'Select LLM provider:',
-      choices: ['Ollama', 'OpenAI', 'OpenRouter (llama3.2:3b)']
+      choices: ['Ollama', 'OpenAI', 'OpenRouter (llama3.1:8b)']
     }
   ]);
 
@@ -31,7 +31,7 @@ export async function selectProvider() {
     const provider = new OpenAIProvider(apiKey);
     provider.setActiveModel("gpt-4.1-nano");
     return provider;
-  } else if (provider === 'OpenRouter (llama3.2:3b)') {
+  } else if (provider === 'OpenRouter (llama3.1:8b)') {
     let apiKey: string;
     if (process.env.OPENROUTER_API_KEY) {
       console.log("Found OpenRouter API key in environment, skipping prompt.");
