@@ -3,6 +3,7 @@ import { Lover } from "./lovers";
 import { randomInt, sleep } from "./util";
 
 export type Gender = "boy" | "girl"
+const WINDOW_SIZE = 15;
 
 export type LoverMessage = {
   content: string;
@@ -68,7 +69,7 @@ export async function simulateLove(params: SimulateLoveParams) {
         role: "system",
         content: personA.systemPrompt,
       },
-      ...messages as Message[],
+      ...messages.slice(-WINDOW_SIZE) as Message[],
     ], { temperature }));
 
     if (controller?.stopped) break;
@@ -93,7 +94,7 @@ export async function simulateLove(params: SimulateLoveParams) {
         role: "system",
         content: personB.systemPrompt,
       },
-      ...messages as Message[],
+      ...messages.slice(-WINDOW_SIZE) as Message[],
     ], { temperature }));
 
     if (controller?.stopped) break;
