@@ -8,6 +8,7 @@ import { ServerContextProvider, useServer, type InitPacketData, type PacketDataL
 import { NotificationCenter } from "./components/NotificationCenter"
 import { ProfilesDisplay } from "./components/ProfilesDisplay"
 import { LiveChat } from "./components/LiveChat"
+import { Analytics } from "@vercel/analytics/react"
 
 const showLiveChat = true;
 const showProfileCards = true;// profile cards are experimental
@@ -105,6 +106,7 @@ function App() {
       className={`w-screen h-screen bg-black flex justify-center items-end transition-opacity duration-700 ${fadeIn ? "opacity-100" : "opacity-0"}`}
       style={{ opacity: fadeIn ? 1 : 0 }}
     >
+      <Analytics />
       <IntroPopUp></IntroPopUp>
       <NotificationCenter connected={connected}></NotificationCenter>
       <StatsBar boyName={boy.name} girlName={girl.name} messagesRecieved={messages.length}></StatsBar>
