@@ -9,7 +9,7 @@ import { NotificationCenter } from "./components/NotificationCenter"
 import { ProfilesDisplay } from "./components/ProfilesDisplay"
 import { LiveChat } from "./components/LiveChat"
 
-const showLiveChat = false;
+const showLiveChat = true;
 const showProfileCards = true;// profile cards are experimental
 type Gender = "boy" | "girl"
 type Message = {
