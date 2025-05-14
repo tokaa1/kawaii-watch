@@ -10,6 +10,7 @@ import { isEnglishAlphabetAnalysis, isEnglishPairAnalysis, randomInt, sleep, tex
 
 const port = process.env.HTTP_PORT || 3001
 const sslPort = process.env.HTTPS_PORT || 443
+const possibleChatNames = boysArray.map(b => b.name)
 //const INACTIVE_TIMEOUT_MS = 3 * 60 * 1000 // 3 minutes
 const INACTIVE_TIMEOUT_MS = 10 * 1000 // 10 seconds
 type Message = {
@@ -17,7 +18,13 @@ type Message = {
   senderName: string,
   role: Gender
 }
-type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote'
+type GlobalChatRoomMessage = {
+  username: string,
+  message: string,
+  timestamp: number
+}
+const GLOBAL_CHAT_WINDOW_SIZE = 25
+type PacketType = 'init' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote' | 'chat-in' | 'chat-broadcast'
 type NotificationColor = 'green' | 'pink' | 'yellow' | 'red'
 const MAX_HISTORY = 300
 
@@ -32,11 +39,12 @@ class State {
   public boy?: Lover
   private vote?: Vote
   private lastActiveTime: number = Date.now()
+  private globalChatRoomMessages: GlobalChatRoomMessage[] = []
 
   constructor(llm: LLMProvider) {
     this.llm = llm
     this.httpServer = createServer()
-    
+
     try {
       const sslOptions = {
         key: readFileSync('./ssl/key.pem'),
@@ -81,35 +89,60 @@ class State {
 
   runSync() {
     this.loveLoop()
-    
+
     this.httpServer.listen(port, () => {
       console.log(`\x1b[195mai's are loving on ws://localhost:${port}\x1b[0m`)
     })
-    
+
     if (this.httpsServer !== this.httpServer) {
       this.httpsServer.listen(sslPort, () => {
         console.log(`\x1b[195mai's are securely loving on wss://localhost:${sslPort}\x1b[0m`)
       })
     }
-    
+
     const wss = new WebSocketServer({ server: this.httpServer })
     this.setupWebSocketServer(wss)
-    
+
     if (this.httpsServer !== this.httpServer) {
       const wssSecure = new WebSocketServer({ server: this.httpsServer })
       this.setupWebSocketServer(wssSecure)
     }
   }
-  
+
   setupWebSocketServer(wss: WebSocketServer) {
     wss.on('connection', (ws) => {
       this.clients.add(ws)
       this.lastActiveTime = Date.now()
 
+      let lastMessageTime = Date.now()
+      let chatUsername = possibleChatNames[randomInt(0, possibleChatNames.length - 1)]
+      ws.send(JSON.stringify({
+        type: 'chat-broadcast',
+        data: this.globalChatRoomMessages
+      }))
+
       ws.on('message', (message) => {
-        const data = JSON.parse(message.toString())
-        if (data.type === 'choice-vote' && this.vote) {
-          this.vote.onChoicePacket(ws, data.data)
+        try {
+          const data = JSON.parse(message.toString())
+          if (data.type === 'choice-vote' && this.vote) {
+            this.vote.onChoicePacket(ws, data.data)
+          } else if (data.type === 'chat-in') {
+            if (Date.now() - lastMessageTime < 1000 || !data.data || !data.data.message || typeof data.data.message !== 'string' || data.data.message.length > 175)
+              return;
+            const msg = {
+              username: chatUsername,
+              message: data.data.message,
+              timestamp: Date.now()
+            }
+            this.globalChatRoomMessages.push(msg)
+            if (this.globalChatRoomMessages.length > GLOBAL_CHAT_WINDOW_SIZE) {
+              this.globalChatRoomMessages.shift()
+            }
+            this.broadcast('chat-broadcast', [msg])
+            lastMessageTime = Date.now()
+          }
+        } catch (error) {
+          console.error(error)
         }
       })
 
@@ -205,10 +238,10 @@ class State {
         let senderAvgDistance = 0;
         const isGirl = senderName === this.girl?.name;
         const prevDistancesArray = isGirl ? girlPreviousDistances : boyPreviousDistances;
-        
+
         // last message from the same sender
         const prevSenderMessage = this.history.slice().reverse().find(msg => msg.senderName === senderName);
-        
+
         if (prevSenderMessage) {
           const senderDistance = textSimilarity(messageObj.content, prevSenderMessage.content);
           prevDistancesArray.push(senderDistance);
@@ -265,7 +298,7 @@ class State {
             state: this,
             choices: ["continue!!", "skip, they're chopped 😭"],
             question: `should we skip ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()}? r they not meant to be?`,
-            durationMs: 10*1000,
+            durationMs: 10 * 1000,
             onComplete: (choices, results) => {
               const continues = results[choices[0]]
               const skips = results[choices[1]]

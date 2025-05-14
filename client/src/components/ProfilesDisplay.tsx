@@ -1,13 +1,6 @@
 import type { PacketDataLover } from "../context/server";
 import { useState, useEffect } from "react";
-
-// get color from hash for university
-function stringToColor(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 70%, 50%)`;
-}
+import { stringToColor } from "../util/color";
 
 function ethnicityToColor(ethnicity: string): string {// gpt made these
   const map: Record<string, string> = {

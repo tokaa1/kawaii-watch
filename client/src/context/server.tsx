@@ -3,7 +3,7 @@ import { createContext, useContext, useRef, useEffect, useCallback, useState } f
 const useProdServerOnDev = false;
 const serverUrl = !import.meta.env.DEV || useProdServerOnDev ? "wss://kawaii-watch-server.nightly.pw" : "ws://localhost:3001";
 
-type PacketType = 'init' | 'stats' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote';
+type PacketType = 'init' | 'stats' | 'message' | 'notification' | 'start-vote' | 'end-vote' | 'progress-vote' | 'choice-vote' | 'chat-in' | 'chat-broadcast';
 export type InitPacketData = {
   boy: PacketDataLover,
   girl: PacketDataLover,
