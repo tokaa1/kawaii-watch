@@ -9,6 +9,7 @@ import { NotificationCenter } from "./components/NotificationCenter"
 import { ProfilesDisplay } from "./components/ProfilesDisplay"
 import { LiveChat } from "./components/LiveChat"
 
+const showLiveChat = false;
 const showProfileCards = true;// profile cards are experimental
 type Gender = "boy" | "girl"
 type Message = {
@@ -108,7 +109,7 @@ function App() {
       <NotificationCenter connected={connected}></NotificationCenter>
       <StatsBar boyName={boy.name} girlName={girl.name} messagesRecieved={messages.length}></StatsBar>
       <ActionCluster></ActionCluster>
-      <LiveChat />
+      {showLiveChat && <LiveChat />}
       <div
         ref={containerRef}
         className={`w-[100%] px-[calc((100%-min(72.5vh,85%))/2)] h-full pb-26 flex flex-col gap-4 overflow-y-auto scrollbar-hide ${showProfileCards ? "py-4" : "py-12"}`}
