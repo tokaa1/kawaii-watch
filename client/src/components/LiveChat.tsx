@@ -102,7 +102,15 @@ export function LiveChat() {
         </div>
       )}
       
-      <div className="absolute bottom-2 right-2">
+      <div className="absolute bottom-2 right-2 flex gap-2">
+        {/* does this belong here? no. would it take 15 minutes to fix it? yes */}
+        <ActionButton onClick={() => window.open('https://github.com/tokaa1/kawaii-watch', '_blank')}>
+          <div className="flex items-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12C2 16.418 4.865 20.166 8.839 21.489C9.339 21.581 9.5 21.278 9.5 21.017C9.5 20.778 9.493 20.046 9.489 19.192C6.727 19.79 6.139 17.819 6.139 17.819C5.685 16.635 5.029 16.334 5.029 16.334C4.121 15.67 5.098 15.683 5.098 15.683C6.101 15.753 6.628 16.75 6.628 16.75C7.52 18.332 8.97 17.866 9.518 17.614C9.609 16.967 9.863 16.501 10.144 16.235C7.953 15.965 5.647 15.075 5.647 11.267C5.647 10.093 6.034 9.132 6.647 8.382C6.545 8.131 6.2 7.082 6.747 5.819C6.747 5.819 7.587 5.557 9.478 6.91C10.291 6.69 11.151 6.58 12.01 6.577C12.867 6.582 13.727 6.692 14.543 6.91C16.432 5.557 17.27 5.819 17.27 5.819C17.818 7.083 17.474 8.133 17.372 8.382C17.985 9.132 18.37 10.094 18.37 11.267C18.37 15.085 16.06 15.962 13.864 16.228C14.212 16.551 14.523 17.195 14.523 18.175C14.523 19.564 14.513 20.688 14.513 21.017C14.513 21.281 14.673 21.586 15.178 21.487C19.138 20.154 22 16.417 22 12C22 6.477 17.523 2 12 2Z" />
+            </svg>
+          </div>
+        </ActionButton>
         <ActionButton onClick={toggleChat}>
           {chatVisible ? 'close chat' : (
             <div className="flex items-center gap-1">
