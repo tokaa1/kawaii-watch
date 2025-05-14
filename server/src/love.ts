@@ -127,8 +127,12 @@ function getRandomWaitTimeMs(wordCount: number) {
   return Math.max(800, Math.min(Math.round(wordCount * msPerWord), 2000));
 }
 
-// we currently just only return the first line of response
-// llm likes to get in a pattern of many multiple lines
+// limit to max 2 emojis and replace newlines with spaces
 function cleanUpResponse(text: string) {
-  return text.replace(/\n/g, ' ').trim();
+  let emojiCount = 0;
+  const limitedEmojis = text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, (match) => {
+    emojiCount++;
+    return emojiCount <= 2 ? match : '';
+  });
+  return limitedEmojis.replace(/\n/g, ' ').trim();
 }
