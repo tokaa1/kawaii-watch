@@ -191,6 +191,8 @@ class State {
       this.girl = girl
       this.boy = boy
       this.history = [];
+      if (this.vote)
+        this.vote.stop();
       this.vote = undefined;
       this.broadcast('init', this.createInitPacketData())
       this.broadcastNotification(`found a new match! ${this.girl?.name.toLowerCase()} and ${this.boy?.name.toLowerCase()}!`, 'yellow')
@@ -293,7 +295,10 @@ class State {
         } else {
           shouldRunVote = (this.history.length % 60 === 0);
         }
-        if (shouldRunVote) {
+        if (this.vote && !this.vote.isRunning()) {
+          this.vote = undefined;
+        }
+        if (shouldRunVote && !this.vote) {
           this.vote = new Vote({
             state: this,
             choices: ["continue!!", "skip, they're chopped 😭"],
@@ -356,6 +361,10 @@ class Vote {
     this.question = params.question
     this.durationMs = params.durationMs
     this.onComplete = params.onComplete
+  }
+
+  public isRunning() {
+    return this.running
   }
 
   public run() {
